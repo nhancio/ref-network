@@ -3,6 +3,8 @@ import {
   getAuth,
   GoogleAuthProvider,
   signInWithPopup,
+  reauthenticateWithPopup,
+  linkWithPopup,
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   updateProfile,
@@ -109,9 +111,28 @@ export async function logOut() {
 export async function fetchGoogleContactsViaOAuth() {
   const provider = new GoogleAuthProvider();
   provider.addScope('https://www.googleapis.com/auth/contacts.readonly');
-  provider.setCustomParameters({ prompt: 'consent', include_granted_scopes: 'true' });
+  const current = auth.currentUser;
+  const paramsConfig = { prompt: 'consent', include_granted_scopes: 'true' };
+  if (current?.email) paramsConfig.login_hint = current.email;
+  provider.setCustomParameters(paramsConfig);
 
-  const result = await signInWithPopup(auth, provider);
+  let result;
+  if (current) {
+    const hasGoogle = current.providerData?.some((p) => p.providerId === 'google.com');
+    try {
+      result = hasGoogle
+        ? await reauthenticateWithPopup(current, provider)
+        : await linkWithPopup(current, provider);
+    } catch (err) {
+      // If Google account is already linked elsewhere, fall back cleanly without breaking email login
+      if (err?.code === 'auth/credential-already-in-use' || err?.code === 'auth/email-already-in-use') {
+        throw new Error('That Google account is already attached to another Ref account. Sign in with Google directly or drop a Google Contacts .csv below.');
+      }
+      throw err;
+    }
+  } else {
+    result = await signInWithPopup(auth, provider);
+  }
   const credential = GoogleAuthProvider.credentialFromResult(result);
   const accessToken = credential?.accessToken;
   if (!accessToken) {
@@ -277,6 +298,10 @@ export async function publishPublicProfile(uid, profile, handle, companyReach = 
   if (!/^[a-z0-9][a-z0-9-]{1,30}[a-z0-9]$/.test(clean)) {
     throw new Error('Choose a handle with 3–32 lowercase letters, numbers, or hyphens.');
   }
+  const existing = await getDoc(doc(db, 'publicProfiles', clean));
+  if (existing.exists() && existing.data().uid !== uid) {
+    throw new Error(`Handle @${clean} is already taken. Try a different handle.`);
+  }
   // Prefer companies explicitly marked "Can intro", fallback to top reachable orgs
   const introMarked = companyReach.filter((c) => c.introCount > 0);
   const listed = (introMarked.length ? introMarked : companyReach).slice(0, 40).map((c) => ({
@@ -319,13 +344,19 @@ function randomToken() {
   return Array.from(bytes, (b) => b.toString(16).padStart(2, '0')).join('');
 }
 
-export async function createCircleInvite(user, profile) {
+export async function createCircleInvite(user, profile, inviterSharedCompanies = []) {
   const token = randomToken();
   await setDoc(doc(db, 'invites', token), {
     inviterUid: user.uid,
     inviterName: profile?.displayName || user.displayName || 'Ref Member',
     inviterPhoto: profile?.photoUrl || user.photoURL || '',
     inviterHeadline: profile?.headline || '',
+    inviterSharedCompanies: inviterSharedCompanies.slice(0, 40).map((c) => ({
+      companyKey: c.companyKey,
+      company: c.company,
+      count: c.count,
+      introCount: c.introCount,
+    })),
     usedBy: null,
     createdAt: serverTimestamp(),
   });
@@ -367,6 +398,7 @@ export async function acceptCircleInvite(token, user, profile, sharedCompanies =
       },
     },
     sharedCompanies: {
+      [invite.inviterUid]: invite.inviterSharedCompanies || [],
       [user.uid]: sharedCompanies.slice(0, 40),
     },
     createdAt: serverTimestamp(),

@@ -182,6 +182,23 @@ function mergeTwo(base, incoming) {
   };
 }
 
+function contactsDiffer(a, b) {
+  return a.name !== b.name
+    || a.email !== b.email
+    || a.phone !== b.phone
+    || a.company !== b.company
+    || a.role !== b.role
+    || a.linkedinUrl !== b.linkedinUrl
+    || a.photoUrl !== b.photoUrl
+    || a.connectedOn !== b.connectedOn
+    || a.messageCount !== b.messageCount
+    || a.lastMessagedAt !== b.lastMessagedAt
+    || a.strength !== b.strength
+    || a.canIntroduce !== b.canIntroduce
+    || a.notes !== b.notes
+    || a.sources.length !== b.sources.length;
+}
+
 export function mergeContactLists(existingList = [], incomingList = []) {
   const records = [];
   const byEmail = new Map();
@@ -233,7 +250,8 @@ export function mergeContactLists(existingList = [], incomingList = []) {
 
   let addedCount = 0;
   let updatedCount = 0;
-  const changed = [];
+  let unchangedCount = 0;
+  const changedById = new Map();
 
   for (const item of incomingList) {
     const rec = normalizeContact(item);
@@ -244,17 +262,22 @@ export function mergeContactLists(existingList = [], incomingList = []) {
       records.push(rec);
       indexRecord(rec, idx);
       addedCount++;
-      changed.push(rec);
+      changedById.set(rec.id, rec);
     } else {
-      const merged = mergeTwo(records[matchIdx], rec);
+      const prev = records[matchIdx];
+      const merged = mergeTwo(prev, rec);
       records[matchIdx] = merged;
       indexRecord(merged, matchIdx);
-      updatedCount++;
-      changed.push(merged);
+      if (contactsDiffer(prev, merged)) {
+        updatedCount++;
+        changedById.set(merged.id, merged);
+      } else {
+        unchangedCount++;
+      }
     }
   }
 
-  return { merged: records, changed, addedCount, updatedCount };
+  return { merged: records, changed: Array.from(changedById.values()), addedCount, updatedCount, unchangedCount };
 }
 
 // Upgrade already-saved contacts that lacked a company but have a work email

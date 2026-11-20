@@ -230,4 +230,26 @@ test('buildGraphModel groups large networks by company hub, expands on demand, a
   assert.equal(searched.matchedContacts.length, 0);
   assert.equal(searched.activeCircle.length, 1);
   assert.ok(searched.nodes.some((n) => n.id === 'second:u2:araku'));
+
+  // Phone-only contacts (<3 real companies) stay in people mode so the 3D graph isn't a single hub
+  const phoneOnly = Array.from({ length: 30 }, (_, i) => ({
+    id: `ph_${i}`, name: `Friend ${i}`, company: '', companyKey: '', role: '', email: '', phone: `98450000${String(i).padStart(2, '0')}`,
+    linkedinUrl: '', sources: ['google'], canIntroduce: false, notes: '',
+  }));
+  const phoneModel = buildGraphModel({ user: { name: 'Nithin' }, contacts: phoneOnly });
+  assert.equal(phoneModel.effectiveMode, 'people');
+  assert.ok(phoneModel.nodes.length > 20);
+});
+
+test('mergeContactLists avoids redundant writes when re-importing identical records', () => {
+  const first = [{ name: 'Meera Krishnan', email: 'meera@razorpay.com', company: 'Razorpay', role: 'Partnerships', sources: ['linkedin'] }];
+  const pass1 = mergeContactLists([], first);
+  assert.equal(pass1.addedCount, 1);
+  assert.equal(pass1.changed.length, 1);
+
+  const pass2 = mergeContactLists(pass1.merged, first);
+  assert.equal(pass2.addedCount, 0);
+  assert.equal(pass2.updatedCount, 0);
+  assert.equal(pass2.unchangedCount, 1);
+  assert.equal(pass2.changed.length, 0);
 });

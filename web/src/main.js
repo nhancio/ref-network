@@ -123,16 +123,16 @@ async function hydrateUserData(user) {
   liveUnsubs.push(
     subscribeCircleConnections(user.uid, (nextCircle) => {
       state.circle = nextCircle;
-      currentView?.refresh?.(true);
+      currentView?.refresh?.(true, { background: true });
     }),
     subscribeIntroRequests(user.uid, (nextReqs) => {
       const prevPending = (state.introRequests.incoming || []).filter((r) => r.status === 'pending').length;
       const nextPending = (nextReqs.incoming || []).filter((r) => r.status === 'pending').length;
       state.introRequests = nextReqs;
       if (nextPending > prevPending) {
-        showToast('New warm introduction request received!');
+        showToast('New warm introduction request received.');
       }
-      currentView?.refresh?.(true);
+      currentView?.refresh?.(true, { background: true });
     }),
   );
 }
@@ -252,7 +252,8 @@ function renderSignedIn() {
         introRequests: state.introRequests,
         onToast: showToast,
         async onCreateInvite() {
-          const token = await createCircleInvite(state.user, state.profile);
+          const reach = summarizeCompanyReach(state.contacts);
+          const token = await createCircleInvite(state.user, state.profile, reach);
           return `${location.origin}/?invite=${token}`;
         },
         async onRemoveConnection(pairId) {
@@ -362,6 +363,17 @@ async function maybeInspectInvite() {
     return null;
   }
 }
+
+window.addEventListener('popstate', async () => {
+  const pubHandle = publicHandleRoute();
+  if (pubHandle) {
+    await renderPublicHandlePage(pubHandle);
+  } else if (state.user) {
+    renderSignedIn();
+  } else {
+    renderSignedOut();
+  }
+});
 
 watchAuth(async (user) => {
   const pubHandle = publicHandleRoute();

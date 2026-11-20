@@ -84,7 +84,11 @@ export function buildGraphModel({
     : [];
 
   const effectiveMode = mode === 'auto'
-    ? (filteredContacts.length > 22 && !query ? 'companies' : filteredContacts.length > 36 ? 'companies' : 'people')
+    ? (companies.length >= 3 && filteredContacts.length > 22 && !query
+        ? 'companies'
+        : companies.length >= 3 && filteredContacts.length > 36
+          ? 'companies'
+          : 'people')
     : mode;
 
   const nodes = [];

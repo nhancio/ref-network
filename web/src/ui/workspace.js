@@ -505,6 +505,15 @@ export function mountWorkspace(container, {
         const list = previewSample && !getContacts().length ? SAMPLE_CONTACTS : getContacts();
         const person = list.find((c) => c.id === id);
         if (person) {
+          if (latestModel?.effectiveMode === 'companies' && person.companyKey && expandedCompanyKey !== person.companyKey) {
+            expandedCompanyKey = person.companyKey;
+            selectedNode = { id: `person:${id}`, kind: 'person', label: person.name, data: person };
+            sidebarTab = 'inspector';
+            updateTabButtons();
+            refresh(true);
+            graph.focusNode(`person:${id}`);
+            return;
+          }
           selectedNode = { id: `person:${id}`, kind: 'person', label: person.name, data: person };
           sidebarTab = 'inspector';
           updateTabButtons();
@@ -521,7 +530,7 @@ export function mountWorkspace(container, {
     else renderInspector();
   }
 
-  function refresh(keepCamera = false) {
+  function refresh(keepCamera = false, { background = false } = {}) {
     const realContacts = getContacts();
     const realCircle = getCircle();
     const isRealEmpty = realContacts.length === 0 && realCircle.length === 0;
@@ -560,7 +569,11 @@ export function mountWorkspace(container, {
     }
 
     updatePathPill(selectedNode);
-    renderSidebar();
+    const isEditingSidebar = background && sidebarBody.contains(document.activeElement)
+      && (document.activeElement?.tagName === 'TEXTAREA' || document.activeElement?.tagName === 'INPUT');
+    if (!isEditingSidebar) {
+      renderSidebar();
+    }
   }
 
   searchInput.addEventListener('input', () => {

@@ -17,11 +17,11 @@ export function mountPublicProfile(container, {
   if (!publicProfile) {
     container.innerHTML = `
       <div class="lp-root" style="min-height:100svh; display:grid; place-content:center; padding:32px; text-align:center;">
-        <div style="max-width:440px;">
-          <img src="/ref-logo-reverse.svg" alt="Ref Network" style="height:26px; margin-bottom:24px;" />
-          <h1 style="font-family:var(--font-serif); font-size:2.6rem; font-weight:400;">Intro page not found</h1>
-          <p style="color:#c5cbb9; margin:12px 0 24px;">This link may have been turned off or moved by its owner.</p>
-          <button type="button" class="lp-btn lp-btn-accent" id="pub-home">Explore Ref Network →</button>
+        <div style="max-width:420px; display:grid; gap:16px; justify-items:center;">
+          <img src="/ref-logo-reverse.svg" alt="Ref Network" style="height:24px;" />
+          <h1 style="font-family:var(--font-serif); font-size:2.5rem; font-weight:400;">Intro page not found</h1>
+          <p style="color:#aca69b;">This link may have been turned off or moved by its owner.</p>
+          <button type="button" class="lp-btn lp-btn-light" id="pub-home">Open Ref Network</button>
         </div>
       </div>
     `;
@@ -31,81 +31,78 @@ export function mountPublicProfile(container, {
 
   const companies = publicProfile.introCompanies || [];
   const isOwner = currentUser && currentUser.uid === publicProfile.uid;
+  const firstName = publicProfile.displayName.split(' ')[0];
 
   container.innerHTML = `
     <div class="lp-root" style="min-height:100svh; display:flex; flex-direction:column;">
-      <header class="lp-nav-wrap">
+      <header class="lp-header">
         <div class="lp-wrap lp-nav">
           <a class="lp-brand" href="/" id="pub-brand"><img src="/ref-logo-reverse.svg" alt="Ref Network" /></a>
-          <div class="lp-nav-cta">
-            <button type="button" class="lp-btn lp-btn-glass" id="pub-my-graph">${currentUser ? 'Open my 3D graph' : 'Build your own graph'}</button>
+          <div class="lp-nav-actions">
+            <button type="button" class="lp-btn lp-btn-light lp-btn-sm" id="pub-my-graph">${currentUser ? 'Open my graph' : 'Build your graph'}</button>
           </div>
         </div>
       </header>
 
-      <section class="lp-hero" style="min-height:auto; padding:112px 0 56px;">
-        <div class="lp-hero-3d" id="pub-3d-host"></div>
-        <div class="lp-hero-scrim" aria-hidden="true"></div>
-        <div class="lp-wrap lp-hero-grid" style="min-height:460px;">
+      <section class="lp-hero" style="min-height:auto; padding:48px 0;">
+        <div class="lp-wrap lp-hero-layout">
           <div class="lp-hero-copy">
-            <div class="lp-eyebrow-pill"><span class="lp-dot"></span>Verified Warm-Intro Reach · ref.nhancio.com/u/${esc(publicProfile.handle)}</div>
-            <div style="display:flex; align-items:center; gap:14px; margin-top:20px;">
-              <div class="inspector-avatar" style="width:56px; height:56px; font-size:1.3rem;">
+            <p class="lp-label lp-label-dark">ref.nhancio.com/u/${esc(publicProfile.handle)}</p>
+            <div style="display:flex; align-items:center; gap:16px; margin-top:12px;">
+              <div class="inspector-avatar" style="width:52px; height:52px;">
                 ${publicProfile.photoUrl ? `<img src="${esc(publicProfile.photoUrl)}" alt="" />` : esc(initials(publicProfile.displayName))}
               </div>
               <div>
-                <h1 style="font-size:clamp(2.4rem, 4.5vw, 3.8rem); margin:0;">${esc(publicProfile.displayName)}</h1>
-                ${publicProfile.headline ? `<p style="color:#cfd5c3; margin-top:4px;">${esc(publicProfile.headline)}</p>` : ''}
+                <h1 style="font-size:clamp(2.25rem, 4vw, 3.25rem); margin:0;">${esc(publicProfile.displayName)}</h1>
+                ${publicProfile.headline ? `<p style="color:#aca69b; margin-top:4px; font-size:0.95rem;">${esc(publicProfile.headline)}</p>` : ''}
               </div>
             </div>
-            <p class="lp-hero-sub" style="margin-top:16px;">
-              ${esc(publicProfile.displayName.split(' ')[0])} can make warm introductions across <strong>${companies.length} organizations</strong>. Pick any organization below to send a private intro request.
+            <p class="lp-hero-sub">
+              ${esc(firstName)} can make warm introductions across ${companies.length} ${companies.length === 1 ? 'organization' : 'organizations'}. Only company names and counts are shown here.
             </p>
-            <div class="lp-cta-row">
-              ${publicProfile.linkedinUrl ? `<a class="lp-btn lp-btn-glass" href="${esc(publicProfile.linkedinUrl)}" target="_blank" rel="noopener">View LinkedIn ↗</a>` : ''}
-              <a class="lp-btn lp-btn-accent" href="#pub-directory">Browse ${companies.length} organizations ↓</a>
+            <div class="lp-hero-actions">
+              <a class="lp-btn lp-btn-light" href="#pub-directory">Browse organizations</a>
+              ${publicProfile.linkedinUrl ? `<a class="lp-text-action" href="${esc(publicProfile.linkedinUrl)}" target="_blank" rel="noopener">LinkedIn profile</a>` : ''}
             </div>
           </div>
-          <div class="lp-hero-hud">
-            <div class="lp-hud-card">
-              <div class="lp-hud-head">
-                <span class="lp-hud-tag">PRIVACY PROTECTED</span>
-                <span class="lp-hud-hint">Drag to orbit · Scroll to zoom</span>
+
+          <div class="lp-stage-frame">
+            <div class="lp-stage-canvas" id="pub-3d-host"></div>
+            <div class="lp-stage-bar">
+              <div class="lp-stage-readout">
+                <div class="lp-route-line" id="pub-hud-route">${esc(publicProfile.displayName)} · ${companies.length} organizations</div>
+                <div class="lp-route-meta" id="pub-hud-detail">Select any node to inspect · Personal emails and phones remain private</div>
               </div>
-              <div class="lp-hud-route" id="pub-hud-route">${esc(publicProfile.displayName)} → ${companies.length} organizations</div>
-              <div class="lp-hud-detail" id="pub-hud-detail">Only company names and counts are visible. Personal emails &amp; phone numbers stay locked in ${esc(publicProfile.displayName.split(' ')[0])}’s vault.</div>
             </div>
           </div>
         </div>
       </section>
 
-      <section class="lp-bento-section" id="pub-directory" style="flex:1;">
+      <section class="lp-paper-section" id="pub-directory" style="flex:1;">
         <div class="lp-wrap">
-          <div style="display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:16px; margin-bottom:24px;">
+          <div style="display:flex; flex-wrap:wrap; align-items:flex-end; justify-content:space-between; gap:16px; margin-bottom:24px;">
             <div>
-              <p class="kicker">Warm Intro Directory</p>
-              <h2 style="font-family:var(--font-serif); font-size:clamp(2rem, 3.6vw, 3rem); font-weight:400; margin-top:6px;">Where ${esc(publicProfile.displayName.split(' ')[0])} can introduce you</h2>
+              <p class="lp-label">Organizations</p>
+              <h2 style="font-family:var(--font-serif); font-size:clamp(2rem, 3.5vw, 2.75rem); font-weight:400; margin-top:8px;">Where ${esc(firstName)} can introduce you</h2>
             </div>
-            <input type="search" id="pub-search" class="ws-search" style="max-width:340px;" placeholder="Filter organizations…" />
+            <input type="search" id="pub-search" class="ws-search" style="max-width:300px;" placeholder="Filter organizations" />
           </div>
-
-          <div id="pub-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(260px, 1fr)); gap:14px;"></div>
+          <div id="pub-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(260px, 1fr)); gap:16px;"></div>
         </div>
       </section>
 
       <footer class="lp-footer">
         <div class="lp-wrap lp-footer-inner">
-          <a class="lp-brand" href="/"><img src="/ref-logo-reverse.svg" alt="Ref Network" style="height:20px;" /></a>
-          <div style="display:flex; gap:18px;">
-            <a href="/privacy" style="color:#cfd5c3;">Privacy Policy</a>
-            <a href="/terms" style="color:#cfd5c3;">Terms</a>
+          <a class="lp-brand" href="/"><img src="/ref-logo-primary.svg" alt="Ref Network" /></a>
+          <div class="lp-footer-links">
+            <a href="/privacy">Privacy policy</a>
+            <a href="/terms">Terms of service</a>
           </div>
         </div>
       </footer>
     </div>
   `;
 
-  // Build lightweight 3D graph model of publicProfile's introCompanies
   const graphModel = {
     nodes: [
       { id: 'you', kind: 'you', label: publicProfile.displayName, radius: 34 },
@@ -133,7 +130,7 @@ export function mountPublicProfile(container, {
     onSelect(node) {
       if (node.kind === 'company') {
         routeEl.textContent = `${publicProfile.displayName} → ${node.label}`;
-        detailEl.textContent = `${node.count} ${node.count === 1 ? 'connection' : 'connections'} · Click “Ask for intro” below to connect.`;
+        detailEl.textContent = `${node.count} ${node.count === 1 ? 'connection' : 'connections'} · Request an intro below`;
       }
     },
   });
@@ -144,15 +141,15 @@ export function mountPublicProfile(container, {
     const q = filter.trim().toLowerCase();
     const list = q ? companies.filter((c) => c.company.toLowerCase().includes(q)) : companies;
     gridEl.innerHTML = list.map((c) => `
-      <article class="step-card" style="padding:18px; gap:12px;">
-        <div style="display:flex; align-items:center; justify-content:space-between; gap:10px;">
-          <h3 style="font-family:var(--font-display); font-size:1.05rem;">${esc(c.company)}</h3>
+      <article class="lp-panel" style="padding:20px; gap:12px;">
+        <div style="display:flex; align-items:center; justify-content:space-between; gap:12px;">
+          <h3 style="font-size:1rem; font-weight:500;">${esc(c.company)}</h3>
           <span class="dir-count">${c.count}</span>
         </div>
-        <p style="font-size:0.83rem; color:var(--ref-muted);">${c.introCount ? `${c.introCount} ready to intro` : `${c.count} connections`}</p>
+        <p style="font-size:0.85rem; color:var(--ref-muted);">${c.introCount ? `${c.introCount} marked ready to intro` : `${c.count} connections`}</p>
         ${isOwner
           ? `<span class="badge" style="width:fit-content;">Your public listing</span>`
-          : `<button type="button" class="btn btn-primary btn-sm" data-req-co="${esc(c.company)}">Ask ${esc(publicProfile.displayName.split(' ')[0])} for an intro</button>`}
+          : `<button type="button" class="btn btn-primary btn-sm" data-req-co="${esc(c.company)}">Ask ${esc(firstName)} for an intro</button>`}
       </article>
     `).join('') || `<p style="color:var(--ref-muted);">No organizations match “${esc(filter)}”.</p>`;
 
