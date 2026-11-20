@@ -14,9 +14,10 @@
   --ref-apricot: #f1ab8a;
   --ref-linkedin: #24639b;
 
-  --font-serif: 'Instrument Serif', Georgia, serif;
-  --font-display: 'Bricolage Grotesque', -apple-system, BlinkMacSystemFont, sans-serif;
-  --font-body: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-serif: 'Geist', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-display: 'Geist', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-body: 'Geist', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: 'Geist Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
 
   --radius-sm: 8px;
   --radius-md: 14px;

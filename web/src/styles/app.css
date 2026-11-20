@@ -45,9 +45,9 @@ h1, h2, h3, h4, p, figure, dl, dd { margin: 0; }
 }
 .g3d-label.g3d-circle { border-color: rgba(241, 171, 138, 0.36); }
 .g3d-count {
-  color: #f1ab8a; font-size: 11px; font-weight: 500; font-variant-numeric: tabular-nums;
+  font-family: var(--font-mono); color: #f1ab8a; font-size: 11px; font-weight: 500; font-variant-numeric: tabular-nums;
 }
-.g3d-sub { color: #aca69b; font-size: 11px; font-weight: 400; }
+.g3d-sub { font-family: var(--font-mono); color: #aca69b; font-size: 10.5px; font-weight: 400; }
 
 /* ================= SHARED CONTROLS ================= */
 .btn {
@@ -127,9 +127,9 @@ h1, h2, h3, h4, p, figure, dl, dd { margin: 0; }
 }
 .lp-hero-copy { display: flex; flex-direction: column; gap: 20px; }
 .lp-hero-copy h1 {
-  font-family: var(--font-serif); font-weight: 400;
-  font-size: clamp(2.85rem, 4.8vw, 4.25rem);
-  line-height: 1.03; letter-spacing: -0.025em;
+  font-family: var(--font-display); font-weight: 500;
+  font-size: clamp(2.5rem, 4.4vw, 3.85rem);
+  line-height: 1.04; letter-spacing: -0.035em;
   color: #efe9de;
 }
 .lp-hero-sub {
@@ -189,9 +189,9 @@ h1, h2, h3, h4, p, figure, dl, dd { margin: 0; }
 }
 .lp-section-intro { max-width: 42rem; margin-bottom: 40px; }
 .lp-section-intro h2 {
-  font-family: var(--font-serif); font-weight: 400;
-  font-size: clamp(2.1rem, 3.8vw, 3.1rem);
-  line-height: 1.08; letter-spacing: -0.02em; margin-top: 8px;
+  font-family: var(--font-display); font-weight: 500;
+  font-size: clamp(1.9rem, 3.2vw, 2.75rem);
+  line-height: 1.1; letter-spacing: -0.03em; margin-top: 8px;
 }
 
 .lp-split-panels {
@@ -224,7 +224,7 @@ h1, h2, h3, h4, p, figure, dl, dd { margin: 0; }
 .lp-preview-row strong { font-weight: 500; color: #1f1b16; }
 .lp-preview-row.is-accent strong { color: #a03824; }
 .lp-preview-head .num, .lp-preview-row .num {
-  text-align: right; font-variant-numeric: tabular-nums; color: #1f1b16; font-weight: 500;
+  text-align: right; font-family: var(--font-mono); font-variant-numeric: tabular-nums; color: #1f1b16; font-weight: 500;
 }
 
 /* Warm Intro Request Card Preview (signature 3-node route) */
@@ -234,7 +234,7 @@ h1, h2, h3, h4, p, figure, dl, dd { margin: 0; }
   display: flex; flex-direction: column; gap: 8px;
 }
 .lp-intro-meta { font-size: 0.78rem; color: #7b7266; }
-.lp-intro-heading { font-family: var(--font-serif); font-size: 1.65rem; font-weight: 400; line-height: 1.1; color: #1f1b16; }
+.lp-intro-heading { font-family: var(--font-display); font-size: 1.35rem; font-weight: 500; letter-spacing: -0.02em; line-height: 1.2; color: #1f1b16; }
 .lp-intro-sub { font-size: 0.86rem; color: #5e554a; }
 .lp-chain {
   display: flex; align-items: center; justify-content: center; gap: 8px; margin: 12px 0;
@@ -270,8 +270,8 @@ h1, h2, h3, h4, p, figure, dl, dd { margin: 0; }
 .lp-photo-figure figcaption { font-size: 0.84rem; color: #8c867c; }
 
 .lp-facts h2 {
-  font-family: var(--font-serif); font-weight: 400;
-  font-size: clamp(2.1rem, 3.6vw, 3rem); line-height: 1.08; margin: 8px 0 28px;
+  font-family: var(--font-display); font-weight: 500;
+  font-size: clamp(1.9rem, 3.2vw, 2.65rem); letter-spacing: -0.03em; line-height: 1.1; margin: 8px 0 28px;
 }
 .lp-fact-list { display: grid; gap: 20px; }
 .lp-fact-list > div {
@@ -281,7 +281,7 @@ h1, h2, h3, h4, p, figure, dl, dd { margin: 0; }
 .lp-fact-list dt { font-size: 0.98rem; font-weight: 500; color: #efe9de; }
 .lp-fact-list dd { font-size: 0.9rem; color: #aca69b; line-height: 1.6; margin-top: 4px; }
 .lp-fact-list code {
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.82rem; color: #e2d8c7;
+  font-family: var(--font-mono); font-size: 0.82rem; color: #e2d8c7;
 }
 
 /* Closing Band & Footer */
@@ -294,7 +294,7 @@ h1, h2, h3, h4, p, figure, dl, dd { margin: 0; }
   max-width: 36rem; display: flex; flex-direction: column; align-items: center; gap: 16px;
 }
 .lp-closing-inner h2 {
-  font-family: var(--font-serif); font-weight: 400; font-size: clamp(2.2rem, 4vw, 3.2rem); line-height: 1.05;
+  font-family: var(--font-display); font-weight: 500; font-size: clamp(2rem, 3.5vw, 2.85rem); letter-spacing: -0.03em; line-height: 1.08;
 }
 .lp-closing-inner p { color: #5e554a; font-size: 0.98rem; }
 
@@ -427,7 +427,7 @@ h1, h2, h3, h4, p, figure, dl, dd { margin: 0; }
 }
 .ws-stat { padding: 12px; text-align: center; }
 .ws-stat + .ws-stat { border-left: 1px solid rgba(31, 27, 22, 0.09); }
-.ws-stat strong { display: block; font-size: 1.25rem; font-weight: 500; line-height: 1.15; font-variant-numeric: tabular-nums; }
+.ws-stat strong { display: block; font-family: var(--font-mono); font-size: 1.2rem; font-weight: 500; line-height: 1.15; font-variant-numeric: tabular-nums; }
 .ws-stat span { font-size: 0.74rem; color: #7b7266; }
 
 .sidebar-tabs {
@@ -497,7 +497,7 @@ h1, h2, h3, h4, p, figure, dl, dd { margin: 0; }
 .dir-item-main strong { display: block; font-size: 0.88rem; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .dir-item-main small { display: block; font-size: 0.78rem; color: #7b7266; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .dir-count {
-  font-size: 0.78rem; font-weight: 500; padding: 2px 8px; border-radius: 6px;
+  font-family: var(--font-mono); font-size: 0.76rem; font-weight: 500; padding: 2px 8px; border-radius: 6px;
   background: #efe9df; color: #5e554a; font-variant-numeric: tabular-nums; flex-shrink: 0;
 }
 
