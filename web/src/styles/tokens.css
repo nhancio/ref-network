@@ -1,0 +1,26 @@
+:root {
+  color-scheme: light;
+  --ref-ivory: #faf5eb;
+  --ref-ivory-deep: #f2eadb;
+  --ref-panel: #fffdf8;
+  --ref-ink: #292921;
+  --ref-muted: #5e594b;
+  --ref-line: #e2d8c6;
+  --ref-olive: #30372a;
+  --ref-olive-deep: #232a20;
+  --ref-terracotta: #a03824;
+  --ref-terracotta-dark: #7d2a19;
+  --ref-sage: #e5ead9;
+  --ref-apricot: #f1ab8a;
+  --ref-linkedin: #24639b;
+
+  --font-serif: 'Instrument Serif', Georgia, serif;
+  --font-display: 'Bricolage Grotesque', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-body: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --shadow-card: 0 10px 30px rgba(41, 41, 33, 0.08);
+  --shadow-modal: 0 24px 64px rgba(35, 42, 32, 0.28);
+}

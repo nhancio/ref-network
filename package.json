@@ -1,0 +1,22 @@
+{
+  "name": "ref-network",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node server.mjs",
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "test": "node --test referral.test.mjs",
+    "test:web": "node --test web/tests/network-lib.test.mjs",
+    "test:all": "node --test referral.test.mjs web/tests/network-lib.test.mjs"
+  },
+  "dependencies": {
+    "fflate": "^0.8.3",
+    "firebase": "^13.4.0",
+    "three": "0.184.0"
+  },
+  "devDependencies": {
+    "vite": "^8.3.8"
+  }
+}

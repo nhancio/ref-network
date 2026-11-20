@@ -1,0 +1,221 @@
+<!doctype html>
+<html lang="en-IN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#faf5eb">
+    <meta name="description" content="Create referral offers people can share, claim and redeem. Ref Network connects word of mouth to sales for Indian shops, restaurants and service businesses.">
+    <title>Ref Network · Referral offers for local businesses</title>
+    <link rel="stylesheet" href="/styles.css">
+    <link rel="stylesheet" href="/landing.css">
+    <script type="module" src="/referral-graph.js"></script>
+  </head>
+  <body class="landing" id="top">
+    <a href="#main" class="skip-link">Skip to content</a>
+    <header class="landing-header">
+      <div class="landing-wrap landing-nav">
+        <a class="brand" href="#top" aria-label="Ref Network home">
+          <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span><span>Ref<span class="brand-light"> Network</span></span>
+        </a>
+        <nav aria-label="Main navigation">
+          <a href="#how-it-works">How it works</a>
+          <a href="#use-cases">Use cases</a>
+          <a href="#faq">FAQ</a>
+        </nav>
+        <a class="landing-button outline nav-action" href="/">Merchant workspace <span aria-hidden="true">↗</span></a>
+      </div>
+    </header>
+
+    <main id="main">
+      <section class="landing-wrap landing-hero" aria-labelledby="hero-title">
+        <div class="landing-hero-copy">
+          <p class="landing-kicker">Referral offers for Indian businesses</p>
+          <h1 id="hero-title"><span>Turn “I know the owner”</span> <em>into a discount.</em></h1>
+          <p>Give people you trust an offer to share. Their friends get clear terms before they buy, and your business sees which introductions turn into sales.</p>
+          <div class="landing-actions">
+            <a class="landing-button solid" href="#referral-network">Explore the network <span aria-hidden="true">↗</span></a>
+            <a class="landing-text-link" href="/">Open merchant workspace <span aria-hidden="true">↗</span></a>
+          </div>
+        </div>
+        <section class="referral-graph" id="referral-network" data-selected="mango" aria-labelledby="network-title">
+          <div class="graph-header">
+            <div><h2 id="network-title">Explore a referral</h2><p class="graph-sample-label">Sample network</p></div>
+            <a class="graph-network-link" href="/network">My network <span aria-hidden="true">↗</span></a>
+          </div>
+          <div class="graph-stage" aria-label="Referral network" aria-describedby="graph-instructions">
+            <div class="graph-edges" aria-hidden="true"><i></i><i></i><i></i></div>
+            <button type="button" class="graph-node" data-node="meera" aria-pressed="false" aria-controls="graph-selection">
+              <span class="node-marker" aria-hidden="true">M</span><span class="node-label">Meera <small>Shopper</small></span>
+            </button>
+            <button type="button" class="graph-node" data-node="asha" aria-pressed="false" aria-controls="graph-selection">
+              <span class="node-marker" aria-hidden="true">A</span><span class="node-label">Asha <small>Referrer</small></span>
+            </button>
+            <button type="button" class="graph-node" data-node="mango" aria-pressed="true" aria-controls="graph-selection">
+              <span class="node-marker" aria-hidden="true">MY</span><span class="node-label">Mango Yard <small>Restaurant</small></span>
+            </button>
+            <button type="button" class="graph-node" data-node="field" aria-pressed="false" aria-controls="graph-selection">
+              <span class="node-marker" aria-hidden="true">FS</span><span class="node-label">Field Supply <small>Shop</small></span>
+            </button>
+          </div>
+          <div class="graph-tools">
+            <p id="graph-instructions">Select a point to see how it connects.</p>
+            <div class="graph-controls" aria-label="3D view controls" hidden>
+              <button type="button" data-view-action="zoom-out" aria-label="Zoom out" title="Zoom out">−</button>
+              <button type="button" data-view-action="zoom-in" aria-label="Zoom in" title="Zoom in">+</button>
+              <button type="button" data-view-action="reset">Reset view</button>
+            </div>
+          </div>
+          <div class="graph-selection" id="graph-selection" aria-live="polite" aria-atomic="true">
+            <p class="graph-route" data-route>Meera → Asha → Mango Yard</p>
+            <p class="graph-detail" data-detail>Asha’s link gives Meera 10% off a bill of ₹700 or more. Ref applies the offer when Meera opens checkout.</p>
+          </div>
+        </section>
+      </section>
+
+      <section class="landing-process landing-wrap" id="how-it-works" aria-labelledby="process-title">
+        <div class="landing-section-heading">
+          <p class="landing-kicker">How it works</p>
+          <h2 id="process-title">From a shared link to a settled bill.</h2>
+          <p>Asha has a friend who runs a gift shop. Here’s how she can pass on an offer to someone in her family group.</p>
+        </div>
+        <ol class="process-grid">
+          <li>
+            <span class="step-number" aria-hidden="true">01</span>
+            <h3>The shop sets the offer</h3>
+            <p>The owner sets 10% off, a ₹700 minimum spend, an end date and a limit on how many shoppers can use it.</p>
+          </li>
+          <li>
+            <span class="step-number" aria-hidden="true">02</span>
+            <h3>Asha shares her link</h3>
+            <p>The owner gives Asha her own referral link. Asha shares it in the family WhatsApp group.</p>
+          </li>
+          <li>
+            <span class="step-number" aria-hidden="true">03</span>
+            <h3>Meera opens the offer</h3>
+            <p>Meera sees the terms on her phone. Ref remembers the offer in her browser. The shop can choose to review requests first.</p>
+          </li>
+          <li>
+            <span class="step-number" aria-hidden="true">04</span>
+            <h3>Ref applies the discount</h3>
+            <p>Meera opens the shop’s bill link and sees her savings automatically. Once staff mark it paid, Ref adds any earned points to Asha’s account.</p>
+          </li>
+        </ol>
+      </section>
+
+      <section class="india-section" aria-labelledby="india-title">
+        <div class="landing-wrap india-layout">
+          <div class="india-intro">
+            <p class="landing-kicker">Built for how people refer in India</p>
+            <h2 id="india-title">Put the offer in the conversation people already have.</h2>
+            <p>A family WhatsApp group, an apartment community, or a regular recommending a favourite café can be the starting point. A referral link carries the offer terms from that conversation to the counter.</p>
+          </div>
+          <dl class="benefit-list">
+            <div>
+              <dt>For businesses</dt>
+              <dd>Give trusted contacts a trackable link. Control the discount and offer limit, then see which links lead to completed sales.</dd>
+            </div>
+            <div>
+              <dt>For customers</dt>
+              <dd>See the terms before making the trip. Open the bill link in the same browser to see the discount and pay the shop the usual way.</dd>
+            </div>
+            <div>
+              <dt>For referrers</dt>
+              <dd>Earn points from participating businesses when your referrals make paid purchases. See them together and use them at the business that awarded them.</dd>
+            </div>
+          </dl>
+        </div>
+      </section>
+
+      <section class="landing-wrap landing-use-cases" id="use-cases" aria-labelledby="use-cases-title">
+        <div class="landing-section-heading">
+          <p class="landing-kicker">Use cases</p>
+          <h2 id="use-cases-title">What would you offer your circle?</h2>
+          <p>Start with a purchase you want more people to try. These are example campaigns a merchant could set up.</p>
+        </div>
+        <div class="use-case-grid">
+          <article class="use-case">
+            <h3>A neighbourhood shop</h3>
+            <p class="use-case-offer">₹150 off purchases of ₹1,000+</p>
+            <p>A new homeware shop shares reusable links with a few regulars. Staff can see which introductions led to a purchase.</p>
+          </article>
+          <article class="use-case">
+            <h3>An independent restaurant</h3>
+            <p class="use-case-offer">10% off a weekday meal</p>
+            <p>A restaurant gives people in nearby apartment groups a clear reason to visit on quieter evenings. The offer terms tell guests when it applies.</p>
+          </article>
+          <article class="use-case">
+            <h3>A local service business</h3>
+            <p class="use-case-offer">₹200 off a first appointment</p>
+            <p>A salon gives regulars single-use invites to share with friends. The owner can review each request before approving the offer.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="landing-wrap landing-example" aria-labelledby="example-title">
+        <div class="example-panel">
+          <div class="example-copy">
+            <p class="landing-kicker">Example sale</p>
+            <h2 id="example-title">Know what a referral costs you.</h2>
+            <p>On Meera’s ₹1,000 bill, the shop gives 10% off and awards Asha 50 points. Meera saves ₹100 and Asha can get ₹50 off a future purchase at this shop.</p>
+            <p class="example-note">The shop collects payment directly and decides whether the discount and future reward fit its margin.</p>
+          </div>
+          <div class="example-visual">
+            <img src="/landing-hero.jpg" width="1440" height="960" loading="lazy" decoding="async" alt="A shopper shows her phone to a neighbourhood shopkeeper at the counter.">
+            <dl class="example-receipt" aria-label="Breakdown of the example sale">
+              <div><dt>Bill subtotal</dt><dd>₹1,000</dd></div>
+              <div><dt>Customer discount</dt><dd>−₹100</dd></div>
+              <div class="receipt-total"><dt>Customer pays</dt><dd>₹900</dd></div>
+              <div class="receipt-reward"><dt>Asha earns</dt><dd>50 points</dd></div>
+            </dl>
+          </div>
+        </div>
+      </section>
+
+      <section class="landing-wrap landing-faq" id="faq" aria-labelledby="faq-title">
+        <div class="landing-section-heading">
+          <p class="landing-kicker">FAQ</p>
+          <h2 id="faq-title">What to know before you share.</h2>
+        </div>
+        <div class="faq-list">
+          <details>
+            <summary>Who can claim an offer?</summary>
+            <p>A reusable link can qualify its holders while the offer is available. A single-use invite lets one shopper use it. The merchant chooses whether to approve offers automatically or review each request first.</p>
+          </details>
+          <details>
+            <summary>Does Ref contact my friends or read my address book?</summary>
+            <p>You choose who gets a link and send it in WhatsApp or any channel you already use. The current demo qualifies shoppers by referral link. Verified phone-number or LinkedIn matching would require a future integration.</p>
+          </details>
+          <details>
+            <summary>How does it fit into billing?</summary>
+            <p>Staff enter the bill reference and subtotal once. The shopper opens the bill link, confirms the discounted total, and pays the business directly. A store or point-of-sale integration can pass in the bill details for the live version.</p>
+          </details>
+          <details>
+            <summary>When does a referral reward count?</summary>
+            <p>Ref credits points to the direct referrer after staff record a qualifying paid purchase. One point gives ₹1 off at the business that awarded it. Your rewards page shows a balance for each business.</p>
+          </details>
+          <details>
+            <summary>Can businesses limit how many offers go out?</summary>
+            <p>Yes. Merchants can set an offer limit and end date, pause the campaign or revoke a link. Approved offers can be used through the end date if the purchase meets the terms.</p>
+          </details>
+        </div>
+      </section>
+
+      <section class="landing-final" aria-labelledby="start-title">
+        <div class="landing-wrap landing-final-inner">
+          <div>
+            <h2 id="start-title">See how a campaign is set up.</h2>
+            <p>The local merchant workspace includes a sample campaign with referral links you can try at checkout.</p>
+          </div>
+          <a class="landing-button solid" href="/">Open merchant workspace <span aria-hidden="true">↗</span></a>
+        </div>
+      </section>
+    </main>
+
+    <footer class="landing-wrap landing-footer">
+      <a class="brand" href="#top" aria-label="Ref Network home">
+        <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span><span>Ref<span class="brand-light"> Network</span></span>
+      </a>
+      <a class="landing-text-link" href="#top">Back to top <span aria-hidden="true">↑</span></a>
+    </footer>
+  </body>
+</html>

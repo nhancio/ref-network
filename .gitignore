@@ -1,0 +1,6 @@
+.ref-network.sqlite*
+node_modules/
+dist/
+.netlify/
+.firebase/
+.DS_Store

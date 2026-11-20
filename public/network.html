@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en-IN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#faf5eb">
+    <title>My Network · Ref Network</title>
+    <link rel="stylesheet" href="/styles.css">
+    <link rel="stylesheet" href="/landing.css">
+    <link rel="stylesheet" href="/network.css">
+    <script type="module" src="/personal-network.js"></script>
+  </head>
+  <body class="landing network-page">
+    <a class="skip-link" href="#main">Skip to content</a>
+    <header class="landing-header">
+      <div class="landing-wrap network-nav">
+        <a class="brand" href="/landing" aria-label="Ref Network home">
+          <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span><span>Ref<span class="brand-light"> Network</span></span>
+        </a>
+        <nav aria-label="Ref Network"><a href="/landing#referral-network">Sample graph</a><a href="/rewards">My rewards</a></nav>
+      </div>
+    </header>
+    <main id="main" class="landing-wrap network-main">
+      <div class="network-heading">
+        <div>
+          <p id="profile-label" class="landing-kicker" hidden></p>
+          <h1>My network</h1>
+          <p>See who you know, where they can introduce you, and which offers they’ve chosen to share.</p>
+        </div>
+        <div id="network-tools" class="network-tools" hidden>
+          <button type="button" class="secondary" data-action="refresh">Refresh</button>
+          <button type="button" class="primary" data-action="invite">Invite a contact</button>
+        </div>
+      </div>
+      <p class="network-notice" id="network-notice" role="status"></p>
+
+      <section id="invite-panel" class="panel network-invitation" aria-labelledby="invite-title" hidden>
+        <h2 id="invite-title"></h2>
+        <p id="invite-detail"></p>
+        <button type="button" class="primary" data-action="accept-invite" hidden>Accept invitation</button>
+      </section>
+
+      <section id="setup-panel" class="panel network-setup" aria-labelledby="setup-title" hidden>
+        <h2 id="setup-title">Create your network profile</h2>
+        <p>Choose the name people will see when you invite them. Only confirmed contacts can see the businesses you choose to share.</p>
+        <form id="network-profile-form">
+          <label>Your display name <input name="name" type="text" required maxlength="70" autocomplete="nickname" placeholder="e.g. Meera"></label>
+          <button type="submit" class="primary">Create profile</button>
+        </form>
+        <p class="network-browser-note">This local profile is saved to this browser.</p>
+      </section>
+
+      <section id="invite-share" class="panel network-invitation" aria-labelledby="invite-share-title" hidden>
+        <h2 id="invite-share-title">Share your invitation</h2>
+        <p>Send this one-use link to someone you know. You’ll confirm their name before they’re added to your network.</p>
+        <div class="invite-copy">
+          <input id="invite-url" type="url" readonly aria-label="Private connection invite">
+          <button type="button" class="secondary" data-action="copy-invite">Copy link</button>
+        </div>
+      </section>
+
+      <div id="network-dashboard" hidden>
+        <div class="network-grid">
+          <section class="referral-graph personal-graph" aria-labelledby="your-graph-title">
+            <div class="graph-header">
+              <h2 id="your-graph-title">Your referral paths</h2>
+              <span id="graph-summary" class="graph-example"></span>
+            </div>
+            <div class="graph-stage network-stage" aria-label="Your connections and reachable businesses" aria-describedby="network-instructions">
+              <div class="network-lines" aria-hidden="true"></div>
+              <div class="network-nodes"></div>
+            </div>
+            <div class="graph-tools">
+              <p id="network-instructions">Select a point to see how it connects.</p>
+              <div class="graph-controls" aria-label="3D view controls" hidden>
+                <button type="button" data-view-action="zoom-out" aria-label="Zoom out" title="Zoom out">−</button>
+                <button type="button" data-view-action="zoom-in" aria-label="Zoom in" title="Zoom in">+</button>
+                <button type="button" data-view-action="reset">Reset view</button>
+              </div>
+            </div>
+            <div class="graph-selection" id="network-selection" aria-live="polite"></div>
+          </section>
+
+          <aside class="panel network-directory" aria-labelledby="contacts-title">
+            <h2 id="contacts-title">People you know</h2>
+            <div id="contact-list"></div>
+            <div id="business-list"></div>
+          </aside>
+        </div>
+
+        <div class="network-management">
+          <section class="panel" aria-labelledby="requests-title">
+            <h2 id="requests-title">Requests</h2>
+            <div id="network-requests"></div>
+          </section>
+          <section class="panel" aria-labelledby="manage-offers-title">
+            <h2 id="manage-offers-title">Businesses I can introduce</h2>
+            <div id="my-network-offers"></div>
+          </section>
+        </div>
+      </div>
+    </main>
+  </body>
+</html>
