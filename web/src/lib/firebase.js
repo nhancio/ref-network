@@ -90,18 +90,25 @@ export async function signInWithEmail(email, password) {
   return result.user;
 }
 
+let pendingSignupName = '';
+
 export async function signUpWithEmail(name, email, password) {
-  const result = await createUserWithEmailAndPassword(auth, email.trim(), password);
   const cleanName = name.trim();
-  if (cleanName) {
-    await updateProfile(result.user, { displayName: cleanName });
-    await setDoc(doc(db, 'users', result.user.uid), {
-      displayName: cleanName,
-      email: result.user.email || '',
-      updatedAt: serverTimestamp(),
-    }, { merge: true });
+  pendingSignupName = cleanName;
+  try {
+    const result = await createUserWithEmailAndPassword(auth, email.trim(), password);
+    if (cleanName) {
+      await updateProfile(result.user, { displayName: cleanName });
+      await setDoc(doc(db, 'users', result.user.uid), {
+        displayName: cleanName,
+        email: result.user.email || '',
+        updatedAt: serverTimestamp(),
+      }, { merge: true });
+    }
+    return result.user;
+  } finally {
+    pendingSignupName = '';
   }
-  return result.user;
 }
 
 export async function logOut() {
@@ -179,7 +186,7 @@ export async function ensureUserProfile(user) {
     return { id: user.uid, ...snap.data() };
   }
   const initial = {
-    displayName: user.displayName || user.email?.split('@')[0] || 'Ref Member',
+    displayName: pendingSignupName || user.displayName || user.email?.split('@')[0] || 'Ref Member',
     email: user.email || '',
     photoUrl: user.photoURL || '',
     headline: '',
