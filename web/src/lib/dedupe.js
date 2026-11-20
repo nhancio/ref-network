@@ -101,6 +101,17 @@ export function stableContactId(contact) {
   return 'c_' + fnvHex(`name:${nameKey}|co:${compKey}`);
 }
 
+export function safeHttpUrl(raw) {
+  const s = String(raw ?? '').trim();
+  if (!s) return '';
+  try {
+    const u = new URL(s);
+    return (u.protocol === 'https:' || u.protocol === 'http:') ? u.href : '';
+  } catch {
+    return '';
+  }
+}
+
 export function normalizeContact(raw) {
   const name = String(raw.name ?? '').trim().slice(0, 120);
   const email = String(raw.email ?? '').trim().slice(0, 160);
@@ -117,8 +128,8 @@ export function normalizeContact(raw) {
   }
 
   const role = String(raw.role ?? '').trim().slice(0, 140);
-  const linkedinUrl = String(raw.linkedinUrl ?? '').trim().slice(0, 260);
-  const photoUrl = String(raw.photoUrl ?? '').trim().slice(0, 400);
+  const linkedinUrl = safeHttpUrl(raw.linkedinUrl).slice(0, 260);
+  const photoUrl = safeHttpUrl(raw.photoUrl).slice(0, 400);
   const connectedOn = String(raw.connectedOn ?? '').trim().slice(0, 40);
   const notes = String(raw.notes ?? '').trim().slice(0, 500);
   const sources = Array.from(new Set((raw.sources || ['manual']).filter(Boolean)));

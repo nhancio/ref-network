@@ -1,4 +1,5 @@
 import { buildGraphModel } from '../lib/graph-model.js';
+import { safeHttpUrl } from '../lib/dedupe.js';
 import { SAMPLE_CONTACTS, SAMPLE_CIRCLE } from '../lib/sample-data.js';
 import { create3DGraph } from './graph-3d.js';
 import { esc } from './modals.js';
@@ -227,7 +228,7 @@ export function mountWorkspace(container, {
           ${profile?.publicProfileEnabled && profile?.publicHandle
             ? `<div class="inspector-meta"><a href="/u/${esc(profile.publicHandle)}" target="_blank" rel="noopener">Public intro page: /u/${esc(profile.publicHandle)} ↗</a></div>`
             : ''}
-          ${profile?.linkedinUrl ? `<div class="inspector-meta"><a href="${esc(profile.linkedinUrl)}" target="_blank" rel="noopener">Your LinkedIn profile ↗</a></div>` : ''}
+          ${safeHttpUrl(profile?.linkedinUrl) ? `<div class="inspector-meta"><a href="${esc(safeHttpUrl(profile.linkedinUrl))}" target="_blank" rel="noopener">Your LinkedIn profile ↗</a></div>` : ''}
           <button type="button" class="btn btn-primary btn-sm" id="ins-connect">+ Import / manage contacts</button>
         </div>
 
@@ -324,7 +325,7 @@ export function mountWorkspace(container, {
           <div class="inspector-meta">
             ${p.email ? `<div>Email: <a href="mailto:${esc(p.email)}">${esc(p.email)}</a></div>` : ''}
             ${p.phone ? `<div>Phone: <a href="tel:${esc(p.phone)}">${esc(p.phone)}</a></div>` : ''}
-            ${p.linkedinUrl ? `<div>LinkedIn: <a href="${esc(p.linkedinUrl)}" target="_blank" rel="noopener">Open profile ↗</a></div>` : ''}
+            ${safeHttpUrl(p.linkedinUrl) ? `<div>LinkedIn: <a href="${esc(safeHttpUrl(p.linkedinUrl))}" target="_blank" rel="noopener">Open profile ↗</a></div>` : ''}
             ${p.connectedOn ? `<div style="color:var(--ref-muted);">Connected on ${esc(p.connectedOn)}</div>` : ''}
           </div>
           <button type="button" class="btn btn-olive btn-sm" id="btn-quick-handoff">Draft warm intro on WhatsApp / Email</button>

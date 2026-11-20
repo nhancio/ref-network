@@ -454,15 +454,29 @@ export function create3DGraph(container, { onSelect, onHover, autoRotate = true,
         graphGroup.add(gyro2);
       }
 
-      // Projected HTML label pill (styled cleanly, zero-overlap managed in animate loop)
+      // Projected HTML label pill (textContent only — zero XSS from untrusted contact/company names)
       const el = document.createElement('div');
       el.className = `g3d-label g3d-${node.kind}`;
-      el.innerHTML = `<span class="g3d-title">${truncate(node.label, 18)}</span>${
-        node.kind === 'company' ? `<span class="g3d-count">${node.count}</span>`
-          : node.kind === 'second-company' ? `<span class="g3d-sub">via ${truncate(node.viaFriend.name.split(' ')[0], 10)}</span>`
-            : node.kind === 'circle' ? `<span class="g3d-sub">Circle</span>`
-              : ''
-      }`;
+      const titleSpan = document.createElement('span');
+      titleSpan.className = 'g3d-title';
+      titleSpan.textContent = truncate(node.label, 18);
+      el.appendChild(titleSpan);
+      if (node.kind === 'company') {
+        const countSpan = document.createElement('span');
+        countSpan.className = 'g3d-count';
+        countSpan.textContent = String(node.count);
+        el.appendChild(countSpan);
+      } else if (node.kind === 'second-company') {
+        const subSpan = document.createElement('span');
+        subSpan.className = 'g3d-sub';
+        subSpan.textContent = `via ${truncate(node.viaFriend.name.split(' ')[0], 10)}`;
+        el.appendChild(subSpan);
+      } else if (node.kind === 'circle') {
+        const subSpan = document.createElement('span');
+        subSpan.className = 'g3d-sub';
+        subSpan.textContent = 'Circle';
+        el.appendChild(subSpan);
+      }
       el.style.opacity = '0';
       labelLayer.appendChild(el);
 

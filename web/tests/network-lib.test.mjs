@@ -14,6 +14,7 @@ import {
   mergeContactLists,
   enrichMissingCompanies,
   summarizeCompanyReach,
+  safeHttpUrl,
 } from '../src/lib/dedupe.js';
 import {
   normalizeHandle,
@@ -252,4 +253,11 @@ test('mergeContactLists avoids redundant writes when re-importing identical reco
   assert.equal(pass2.updatedCount, 0);
   assert.equal(pass2.unchangedCount, 1);
   assert.equal(pass2.changed.length, 0);
+});
+
+test('safeHttpUrl strips javascript: and invalid URLs while preserving https links', () => {
+  assert.equal(safeHttpUrl('https://linkedin.com/in/nithin'), 'https://linkedin.com/in/nithin');
+  assert.equal(safeHttpUrl('javascript:alert(1)'), '');
+  assert.equal(safeHttpUrl('data:text/html,<script>alert(1)</script>'), '');
+  assert.equal(safeHttpUrl('not a url'), '');
 });

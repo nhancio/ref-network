@@ -1,4 +1,5 @@
 import { create3DGraph } from './graph-3d.js';
+import { safeHttpUrl } from '../lib/dedupe.js';
 import { esc } from './modals.js';
 
 function initials(name) {
@@ -32,6 +33,8 @@ export function mountPublicProfile(container, {
   const companies = publicProfile.introCompanies || [];
   const isOwner = currentUser && currentUser.uid === publicProfile.uid;
   const firstName = publicProfile.displayName.split(' ')[0];
+  const safeLinkedIn = safeHttpUrl(publicProfile.linkedinUrl);
+  const safePhoto = safeHttpUrl(publicProfile.photoUrl);
 
   container.innerHTML = `
     <div class="lp-root" style="min-height:100svh; display:flex; flex-direction:column;">
@@ -50,7 +53,7 @@ export function mountPublicProfile(container, {
             <p class="lp-label lp-label-dark">ref.nhancio.com/u/${esc(publicProfile.handle)}</p>
             <div style="display:flex; align-items:center; gap:16px; margin-top:12px;">
               <div class="inspector-avatar" style="width:52px; height:52px;">
-                ${publicProfile.photoUrl ? `<img src="${esc(publicProfile.photoUrl)}" alt="" />` : esc(initials(publicProfile.displayName))}
+                ${safePhoto ? `<img src="${esc(safePhoto)}" alt="" />` : esc(initials(publicProfile.displayName))}
               </div>
               <div>
                 <h1 style="font-size:clamp(2.25rem, 4vw, 3.25rem); margin:0;">${esc(publicProfile.displayName)}</h1>
@@ -62,7 +65,7 @@ export function mountPublicProfile(container, {
             </p>
             <div class="lp-hero-actions">
               <a class="lp-btn lp-btn-light" href="#pub-directory">Browse organizations</a>
-              ${publicProfile.linkedinUrl ? `<a class="lp-text-action" href="${esc(publicProfile.linkedinUrl)}" target="_blank" rel="noopener">LinkedIn profile</a>` : ''}
+              ${safeLinkedIn ? `<a class="lp-text-action" href="${esc(safeLinkedIn)}" target="_blank" rel="noopener">LinkedIn profile</a>` : ''}
             </div>
           </div>
 
