@@ -2,6 +2,8 @@ import './styles/tokens.css';
 import './styles/app.css';
 import {
   watchAuth,
+  signInWithGoogle,
+  friendlyAuthError,
   logOut,
   ensureUserProfile,
   updateUserProfile,
@@ -178,6 +180,14 @@ function renderSignedOut() {
     pendingInvite: Boolean(pendingInviteToken),
     onOpenAuth(mode) {
       openAuthModal({ mode });
+    },
+    async onGoogleSignIn() {
+      try {
+        await signInWithGoogle();
+      } catch (err) {
+        showToast(friendlyAuthError(err));
+        throw err;
+      }
     },
   });
 }
