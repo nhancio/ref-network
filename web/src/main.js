@@ -385,6 +385,13 @@ window.addEventListener('popstate', async () => {
   }
 });
 
+// Paint landing immediately for first-time visitors (no loading spinner wait before Firebase Auth resolves)
+if (!publicHandleRoute()) {
+  renderSignedOut();
+}
+
+let authResolved = false;
+
 watchAuth(async (user) => {
   const pubHandle = publicHandleRoute();
 
@@ -395,7 +402,10 @@ watchAuth(async (user) => {
       await renderPublicHandlePage(pubHandle);
       return;
     }
-    renderSignedOut();
+    if (authResolved || !currentView) {
+      renderSignedOut();
+    }
+    authResolved = true;
     if (pendingInviteToken) {
       const invite = await maybeInspectInvite();
       openAuthModal({ mode: 'signin', inviteContext: invite });
@@ -403,7 +413,8 @@ watchAuth(async (user) => {
     return;
   }
 
-  appEl.innerHTML = `<div class="boot-screen"><img src="/ref-mark.svg" alt="" width="40" height="34" /><p>Loading your relationship graph…</p></div>`;
+  authResolved = true;
+  appEl.innerHTML = `<div class="boot-screen"><img src="/ref-mark.svg" alt="" width="40" height="40" /><p>Loading your relationship graph…</p></div>`;
   try {
     await hydrateUserData(user);
     if (pubHandle) {
