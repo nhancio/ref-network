@@ -324,6 +324,26 @@ function renderSignedIn() {
       });
     },
 
+    async onRespondIntro(reqId, status) {
+      await respondToIntroRequest(reqId, status);
+      state.introRequests = await loadIntroRequests(state.user.uid);
+      currentView?.refresh?.(true);
+      showToast(status === 'vouched' ? 'Vouched! Forward the warm intro on WhatsApp or Email.' : 'Request declined.');
+    },
+
+    onOpenRequestHandoff(req, pickedContact) {
+      openWarmIntroHandoffModal({
+        connectorName: state.profile?.displayName || state.user.displayName || '',
+        requesterName: req.requesterName,
+        targetCompany: req.targetCompany,
+        note: req.note,
+        contactName: pickedContact?.name || '',
+        contactPhone: pickedContact?.phone || '',
+        contactEmail: pickedContact?.email || '',
+        onToast: showToast,
+      });
+    },
+
     async onSaveNotes(contactId, notes) {
       await updateSingleContact(state.user.uid, contactId, { notes });
       state.contacts = state.contacts.map((c) => (c.id === contactId ? { ...c, notes } : c));

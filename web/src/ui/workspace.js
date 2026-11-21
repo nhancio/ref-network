@@ -1,5 +1,5 @@
 import { buildGraphModel } from '../lib/graph-model.js';
-import { safeHttpUrl } from '../lib/dedupe.js';
+import { safeHttpUrl, normalizeCompanyKey } from '../lib/dedupe.js';
 import { SAMPLE_CONTACTS, SAMPLE_CIRCLE } from '../lib/sample-data.js';
 import { create3DGraph } from './graph-3d.js';
 import { esc } from './modals.js';
@@ -21,6 +21,8 @@ export function mountWorkspace(container, {
   onToggleIntro,
   onBulkToggleCompanyIntro,
   onOpenQuickHandoff,
+  onRespondIntro,
+  onOpenRequestHandoff,
   onSaveNotes,
   onDeleteContact,
   onRequestIntro,
@@ -31,7 +33,7 @@ export function mountWorkspace(container, {
   let searchQuery = '';
   let expandedCompanyKey = null;
   let selectedNode = null;
-  let sidebarTab = 'inspector';
+  let sidebarTab = 'inspector'; // 'inspector' | 'directory' | 'requests'
   let previewSample = false;
 
   const displayName = profile?.displayName || user.displayName || user.email?.split('@')[0] || 'You';
@@ -49,18 +51,18 @@ export function mountWorkspace(container, {
             type="search"
             id="ws-search-input"
             class="ws-search"
-            placeholder="Search people, companies, roles (e.g. Swiggy, Founder)…"
+            placeholder="Search a company or role (e.g. Swiggy, Myntra, VP Product)…"
             autocomplete="off"
           />
           <button type="button" class="ws-search-clear" id="ws-search-clear" hidden aria-label="Clear search">×</button>
         </div>
         <div class="ws-actions">
-          <button type="button" class="btn btn-primary btn-sm" id="btn-connect-sources">+ Connect LinkedIn & Contacts</button>
-          <button type="button" class="btn btn-outline btn-sm" id="btn-open-circle">Circle & Intros <span id="circle-req-badge"></span></button>
+          <button type="button" class="btn btn-primary btn-sm" id="btn-connect-sources">+ Connect Contacts</button>
+          <button type="button" class="btn btn-outline btn-sm" id="btn-open-circle">Circle &amp; Invite</button>
           <button type="button" class="ws-user-chip" id="btn-user-menu" title="Sign out">
             <span class="avatar-circle">${photoUrl ? `<img src="${esc(photoUrl)}" alt="" />` : esc(initials(displayName))}</span>
             <span>${esc(displayName.split(' ')[0])}</span>
-            <span style="color:var(--ref-muted); font-size:0.75rem;">Sign out</span>
+            <span style="color:#75746e; font-size:0.75rem;">Sign out</span>
           </button>
         </div>
       </header>
@@ -70,9 +72,8 @@ export function mountWorkspace(container, {
           <div class="graph-toolbar">
             <div class="filter-pills" role="tablist" aria-label="Filter by source">
               <button type="button" class="pill-btn active" data-filter="all">All</button>
-              <button type="button" class="pill-btn" data-filter="linkedin">LinkedIn</button>
-              <button type="button" class="pill-btn" data-filter="contacts">Contacts</button>
-              <button type="button" class="pill-btn" data-filter="circle">Circle</button>
+              <button type="button" class="pill-btn" data-filter="contacts">My Contacts</button>
+              <button type="button" class="pill-btn" data-filter="circle">My Circle (2nd°)</button>
               <button type="button" class="pill-btn" data-filter="intro">Can Intro</button>
             </div>
             <div class="mode-toggle" role="group" aria-label="Graph grouping">
@@ -86,8 +87,8 @@ export function mountWorkspace(container, {
 
           <div class="graph-bottom-bar">
             <div class="graph-path-pill" id="ws-path-pill">
-              <div class="path-label">${esc(displayName)} · 3D Personal Graph</div>
-              <div class="path-sub">Drag to orbit in 3D · Click any company orb to expand its people</div>
+              <div class="path-label">${esc(displayName)} · 3D Relationship Graph</div>
+              <div class="path-sub">Search any company to trace warm intro paths · Drag to orbit</div>
             </div>
             <div class="graph-zoom-controls">
               <button type="button" id="zoom-out" title="Zoom out" aria-label="Zoom out">−</button>
@@ -97,15 +98,16 @@ export function mountWorkspace(container, {
           </div>
         </section>
 
-        <aside class="ws-sidebar" aria-label="Network details and directory">
+        <aside class="ws-sidebar" aria-label="Network details, search results, and intro requests">
           <div class="ws-stats-bar">
             <div class="ws-stat"><strong id="stat-contacts">0</strong><span>Contacts</span></div>
             <div class="ws-stat"><strong id="stat-companies">0</strong><span>Companies</span></div>
             <div class="ws-stat"><strong id="stat-circle">0</strong><span>Circle</span></div>
           </div>
-          <div class="sidebar-tabs">
+          <div class="sidebar-tabs sidebar-tabs-3">
             <button type="button" class="sidebar-tab active" data-tab="inspector">Inspector</button>
-            <button type="button" class="sidebar-tab" data-tab="directory">Directory</button>
+            <button type="button" class="sidebar-tab" data-tab="directory">Search &amp; List</button>
+            <button type="button" class="sidebar-tab" data-tab="requests">Requests <span id="tab-req-badge"></span></button>
           </div>
           <div class="sidebar-body" id="ws-sidebar-body"></div>
         </aside>
@@ -155,12 +157,12 @@ export function mountWorkspace(container, {
     if (node.kind === 'company') {
       pathPill.innerHTML = `
         <div class="path-label">${esc(displayName)} → ${esc(node.label)}</div>
-        <div class="path-sub">${node.count} direct ${node.count === 1 ? 'connection' : 'connections'}${node.introCount ? ` · ${node.introCount} marked ready to intro` : ''}</div>
+        <div class="path-sub">${node.count} direct ${node.count === 1 ? 'contact' : 'contacts'}${node.introCount ? ` · ${node.introCount} marked ready to intro` : ''}</div>
       `;
     } else if (node.kind === 'person') {
       pathPill.innerHTML = `
         <div class="path-label">${esc(displayName)} → ${esc(node.label)}${node.data.company ? ` (${esc(node.data.company)})` : ''}</div>
-        <div class="path-sub">${esc(node.data.role || 'Direct contact')} · ${esc(node.data.sources.join(' + '))}</div>
+        <div class="path-sub">${esc(node.data.role || 'Direct contact')} · Private to your vault</div>
       `;
     } else if (node.kind === 'circle') {
       pathPill.innerHTML = `
@@ -168,9 +170,10 @@ export function mountWorkspace(container, {
         <div class="path-sub">${node.data.sharedCompanies.length} organizations reachable via ${esc(node.label.split(' ')[0])}</div>
       `;
     } else if (node.kind === 'second-company') {
+      const roles = Array.isArray(node.data.roles) && node.data.roles.length ? ` · ${node.data.roles.join(', ')}` : '';
       pathPill.innerHTML = `
         <div class="path-label">${esc(displayName)} → ${esc(node.viaFriend.name)} → ${esc(node.label)}</div>
-        <div class="path-sub">2nd-degree warm intro path · ${node.data.count} contacts via ${esc(node.viaFriend.name.split(' ')[0])}</div>
+        <div class="path-sub">2nd-degree warm path · ${node.data.count} ${node.data.count === 1 ? 'contact' : 'contacts'}${esc(roles)} · Private until ${esc(node.viaFriend.name.split(' ')[0])} vouches</div>
       `;
     }
   }
@@ -188,13 +191,13 @@ export function mountWorkspace(container, {
     }
     onboardingSlot.innerHTML = `
       <div class="onboarding-banner">
-        <h3>${previewSample ? 'Previewing a sample 3D Bengaluru graph' : 'Your 3D constellation is ready'}</h3>
+        <h3>${previewSample ? 'Previewing Nithin ↔ Uma sample 3D graph' : 'Your 3D relationship graph is ready'}</h3>
         <p>${previewSample
-          ? 'Connect your real LinkedIn .zip / Connections.csv or Google Contacts to replace this preview with your actual relationships.'
-          : 'Import your LinkedIn .zip export or sync Google Contacts to instantly map every company and warm intro path in 3D.'}</p>
+          ? 'Try searching “Swiggy” (via Uma) or “Myntra” (direct). Connect your real contacts to build your own private graph.'
+          : 'Sync Google Contacts or invite a friend to your Ref Circle to map warm paths in 3D.'}</p>
         <div class="onboarding-banner-actions">
-          <button type="button" class="btn btn-primary btn-sm" id="ob-connect">Connect LinkedIn & Contacts</button>
-          <button type="button" class="btn btn-outline btn-sm" id="ob-toggle-sample">${previewSample ? 'Hide sample' : 'Preview 3D sample'}</button>
+          <button type="button" class="btn btn-primary btn-sm" id="ob-connect">Sync Google Contacts</button>
+          <button type="button" class="btn btn-outline btn-sm" id="ob-toggle-sample">${previewSample ? 'Hide sample' : 'Try sample graph'}</button>
         </div>
       </div>
     `;
@@ -202,7 +205,7 @@ export function mountWorkspace(container, {
     onboardingSlot.querySelector('#ob-toggle-sample').addEventListener('click', () => {
       previewSample = !previewSample;
       selectedNode = null;
-      expandedCompanyKey = previewSample ? 'swiggy' : null;
+      expandedCompanyKey = previewSample ? 'myntra' : null;
       refresh(false);
     });
   }
@@ -211,6 +214,10 @@ export function mountWorkspace(container, {
     const node = selectedNode;
     if (!node || node.kind === 'you') {
       const topCompanies = (latestModel?.companies || []).slice(0, 6);
+      const circlePaths = (latestModel?.activeCircle || []).flatMap((f) =>
+        (f.sharedCompanies || []).map((co) => ({ friend: f, co })),
+      ).slice(0, 4);
+
       sidebarBody.innerHTML = `
         <div class="inspector-card">
           <div class="inspector-head">
@@ -221,20 +228,39 @@ export function mountWorkspace(container, {
             </div>
           </div>
           <div class="source-badges">
-            <span class="badge linkedin">LinkedIn: ${latestModel?.stats.linkedinCount || 0}</span>
-            <span class="badge google">Contacts: ${latestModel?.stats.contactsCount || 0}</span>
+            <span class="badge google">Contacts: ${latestModel?.stats.totalContacts || 0}</span>
+            <span class="badge circle">Circle: ${latestModel?.stats.circleCount || 0}</span>
             <span class="badge intro">Can Intro: ${latestModel?.stats.introCount || 0}</span>
           </div>
           ${profile?.publicProfileEnabled && profile?.publicHandle
             ? `<div class="inspector-meta"><a href="/u/${esc(profile.publicHandle)}" target="_blank" rel="noopener">Public intro page: /u/${esc(profile.publicHandle)} ↗</a></div>`
             : ''}
-          ${safeHttpUrl(profile?.linkedinUrl) ? `<div class="inspector-meta"><a href="${esc(safeHttpUrl(profile.linkedinUrl))}" target="_blank" rel="noopener">Your LinkedIn profile ↗</a></div>` : ''}
-          <button type="button" class="btn btn-primary btn-sm" id="ins-connect">+ Import / manage contacts</button>
+          <div style="display:flex; gap:8px; flex-wrap:wrap;">
+            <button type="button" class="btn btn-primary btn-sm" id="ins-connect">+ Sync contacts</button>
+            <button type="button" class="btn btn-outline btn-sm" id="ins-invite">Invite a friend</button>
+          </div>
         </div>
+
+        ${circlePaths.length ? `
+          <div>
+            <p class="kicker" style="margin-bottom:8px;">Warm paths via your Circle (2nd-degree)</p>
+            <div class="dir-list">
+              ${circlePaths.map(({ friend, co }) => `
+                <div class="dir-item" style="cursor:default;">
+                  <div class="dir-item-main">
+                    <strong>${esc(co.company)}</strong>
+                    <small>Via ${esc(friend.name)}${co.roles?.length ? ` · ${esc(co.roles.slice(0, 2).join(', '))}` : ` · ${co.count} contacts`}</small>
+                  </div>
+                  <button type="button" class="btn btn-primary btn-sm" data-quick-ask-uid="${esc(friend.uid)}" data-quick-ask-name="${esc(friend.name)}" data-quick-ask-co="${esc(co.company)}">Ask intro</button>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        ` : ''}
 
         ${topCompanies.length ? `
           <div>
-            <p class="kicker" style="margin-bottom:8px;">Top organizations in your graph</p>
+            <p class="kicker" style="margin-bottom:8px;">Your direct organizations</p>
             <div class="dir-list">
               ${topCompanies.map((co) => `
                 <button type="button" class="dir-item" data-pick-company="${esc(co.key)}">
@@ -247,10 +273,12 @@ export function mountWorkspace(container, {
               `).join('')}
             </div>
           </div>
-        ` : `<p style="font-size:0.86rem; color:var(--ref-muted);">Connect LinkedIn or Google Contacts to populate your organization reach.</p>`}
+        ` : `<p style="font-size:0.86rem; color:#666560;">Sync Google Contacts or invite a friend to start mapping warm intro paths.</p>`}
       `;
       sidebarBody.querySelector('#ins-connect')?.addEventListener('click', onOpenConnect);
+      sidebarBody.querySelector('#ins-invite')?.addEventListener('click', onOpenCircle);
       wireCompanyPickers();
+      wireQuickAskButtons();
       return;
     }
 
@@ -264,7 +292,7 @@ export function mountWorkspace(container, {
             <div class="inspector-avatar company">${co.people.length}</div>
             <div>
               <h3 class="inspector-title">${esc(co.name)}</h3>
-              <p class="inspector-sub">${co.people.length} ${co.people.length === 1 ? 'connection' : 'connections'} in your network</p>
+              <p class="inspector-sub">${co.people.length} direct ${co.people.length === 1 ? 'contact' : 'contacts'} in your private vault</p>
             </div>
           </div>
           <div class="source-badges">
@@ -278,11 +306,11 @@ export function mountWorkspace(container, {
           ` : ''}
         </div>
         <div>
-          <p class="kicker" style="margin-bottom:8px;">People at ${esc(co.name)}</p>
+          <p class="kicker" style="margin-bottom:8px;">Your contacts at ${esc(co.name)}</p>
           <div class="dir-list">
             ${co.people.map((p) => `
               <button type="button" class="dir-item" data-pick-person="${esc(p.id)}">
-                <div class="avatar-circle" style="${p.canIntroduce ? 'background:var(--ref-terracotta);' : 'background:var(--ref-olive);'}">
+                <div class="avatar-circle" style="${p.canIntroduce ? 'background:#a03824;' : 'background:#2c2f27;'}">
                   ${p.photoUrl ? `<img src="${esc(p.photoUrl)}" alt="" />` : esc(initials(p.name))}
                 </div>
                 <div class="dir-item-main">
@@ -326,7 +354,7 @@ export function mountWorkspace(container, {
             ${p.email ? `<div>Email: <a href="mailto:${esc(p.email)}">${esc(p.email)}</a></div>` : ''}
             ${p.phone ? `<div>Phone: <a href="tel:${esc(p.phone)}">${esc(p.phone)}</a></div>` : ''}
             ${safeHttpUrl(p.linkedinUrl) ? `<div>LinkedIn: <a href="${esc(safeHttpUrl(p.linkedinUrl))}" target="_blank" rel="noopener">Open profile ↗</a></div>` : ''}
-            ${p.connectedOn ? `<div style="color:var(--ref-muted);">Connected on ${esc(p.connectedOn)}</div>` : ''}
+            ${p.connectedOn ? `<div style="color:#75746e;">Connected on ${esc(p.connectedOn)}</div>` : ''}
           </div>
           <button type="button" class="btn btn-olive btn-sm" id="btn-quick-handoff">Draft warm intro on WhatsApp / Email</button>
           ${!isSample ? `
@@ -341,13 +369,11 @@ export function mountWorkspace(container, {
                 <button type="button" class="btn btn-ghost btn-sm" id="btn-delete-contact" style="color:#8b261d;">Remove</button>
               </div>
             </div>
-          ` : `<p style="font-size:0.8rem; color:var(--ref-muted);">Sample preview contact. Import your own network to edit notes and intro status.</p>`}
+          ` : `<p style="font-size:0.8rem; color:#75746e;">Sample preview contact. Sync your contacts to edit notes and intro status.</p>`}
         </div>
       `;
 
-      sidebarBody.querySelector('#btn-quick-handoff').addEventListener('click', () => {
-        onOpenQuickHandoff(p);
-      });
+      sidebarBody.querySelector('#btn-quick-handoff').addEventListener('click', () => onOpenQuickHandoff(p));
 
       if (!isSample) {
         sidebarBody.querySelector('#toggle-can-intro').addEventListener('change', async (e) => {
@@ -382,7 +408,7 @@ export function mountWorkspace(container, {
               <p class="inspector-sub">${esc(friend.headline || 'Connected in your Ref Circle')}</p>
             </div>
           </div>
-          <span class="badge circle" style="width:fit-content;">Trusted Circle Bridge</span>
+          <span class="badge circle" style="width:fit-content;">Trusted Circle · Contacts stay private</span>
         </div>
         <div>
           <p class="kicker" style="margin-bottom:8px;">Companies ${esc(friend.name.split(' ')[0])} can introduce you to</p>
@@ -391,95 +417,234 @@ export function mountWorkspace(container, {
               <div class="dir-item" style="cursor:default;">
                 <div class="dir-item-main">
                   <strong>${esc(co.company)}</strong>
-                  <small>${co.count} ${co.count === 1 ? 'contact' : 'contacts'}</small>
+                  <small>${co.count} ${co.count === 1 ? 'contact' : 'contacts'}${co.roles?.length ? ` · ${esc(co.roles.join(', '))}` : ''}</small>
                 </div>
-                <button type="button" class="btn btn-primary btn-sm" data-ask-intro="${esc(co.company)}">Ask intro</button>
+                <button type="button" class="btn btn-primary btn-sm" data-quick-ask-uid="${esc(friend.uid)}" data-quick-ask-name="${esc(friend.name)}" data-quick-ask-co="${esc(co.company)}">Ask intro</button>
               </div>
-            `).join('') || `<p style="font-size:0.85rem; color:var(--ref-muted);">No shared organizations yet.</p>`}
+            `).join('') || `<p style="font-size:0.85rem; color:#666560;">No shared organizations yet.</p>`}
           </div>
         </div>
       `;
-      sidebarBody.querySelectorAll('[data-ask-intro]').forEach((btn) => {
-        btn.addEventListener('click', () => {
-          if (previewSample && !getContacts().length) {
-            onOpenCircle();
-            return;
-          }
-          onRequestIntro({ connectorUid: friend.uid, connectorName: friend.name, targetCompany: btn.dataset.askIntro });
-        });
-      });
+      wireQuickAskButtons();
       return;
     }
 
     if (node.kind === 'second-company') {
       const friend = node.viaFriend;
       const co = node.data;
+      const roles = Array.isArray(co.roles) && co.roles.length ? co.roles : [];
       sidebarBody.innerHTML = `
         <div class="inspector-card">
           <div class="inspector-head">
             <div class="inspector-avatar circle">${esc(initials(co.company))}</div>
             <div>
               <h3 class="inspector-title">${esc(co.company)}</h3>
-              <p class="inspector-sub">Warm path via <strong>${esc(friend.name)}</strong></p>
+              <p class="inspector-sub">${esc(displayName)} → <strong>${esc(friend.name)}</strong> → ${esc(co.company)}</p>
             </div>
           </div>
-          <p style="font-size:0.88rem; color:var(--ref-muted); line-height:1.5;">
-            ${esc(friend.name)} has <strong>${co.count}</strong> ${co.count === 1 ? 'connection' : 'connections'} at ${esc(co.company)}. Request a private warm introduction below.
+          ${roles.length ? `
+            <div class="source-badges">
+              ${roles.map((r) => `<span class="badge">${esc(r)}</span>`).join('')}
+            </div>
+          ` : ''}
+          <p style="font-size:0.86rem; color:#52514d; line-height:1.55;">
+            <strong>${esc(friend.name)}</strong> knows <strong>${co.count}</strong> ${co.count === 1 ? 'person' : 'people'} at ${esc(co.company)}. Their personal contact details stay private — ask ${esc(friend.name.split(' ')[0])} to make a warm introduction.
           </p>
-          <button type="button" class="btn btn-primary" id="btn-ask-second-intro">Ask ${esc(friend.name.split(' ')[0])} for an intro</button>
+          <button type="button" class="btn btn-primary" data-quick-ask-uid="${esc(friend.uid)}" data-quick-ask-name="${esc(friend.name)}" data-quick-ask-co="${esc(co.company)}">
+            Ask ${esc(friend.name.split(' ')[0])} for an intro
+          </button>
         </div>
       `;
-      sidebarBody.querySelector('#btn-ask-second-intro').addEventListener('click', () => {
-        if (previewSample && !getContacts().length) {
-          onOpenCircle();
-          return;
-        }
-        onRequestIntro({ connectorUid: friend.uid, connectorName: friend.name, targetCompany: co.company });
-      });
+      wireQuickAskButtons();
     }
   }
 
   function renderDirectory() {
     const companies = latestModel?.companies || [];
     const people = latestModel?.matchedContacts || [];
+    const circleHits = (latestModel?.activeCircle || []).flatMap((friend) =>
+      (friend.sharedCompanies || []).map((co) => ({ friend, co })),
+    );
     const showingCompanies = latestModel?.effectiveMode === 'companies' && !searchQuery;
+
+    const circleSectionHtml = circleHits.length ? `
+      <div>
+        <p class="kicker" style="margin-bottom:8px;">Warm paths via your Circle (${circleHits.length})</p>
+        <div class="dir-list">
+          ${circleHits.map(({ friend, co }) => `
+            <div class="dir-item" style="cursor:default;">
+              <div class="avatar-circle" style="background:#f4e2d8; color:#872e1c;">${esc(initials(friend.name))}</div>
+              <div class="dir-item-main">
+                <strong>${esc(co.company)} <span style="font-weight:400; color:#75746e;">via ${esc(friend.name)}</span></strong>
+                <small>${co.count} ${co.count === 1 ? 'contact' : 'contacts'}${co.roles?.length ? ` · ${esc(co.roles.slice(0, 2).join(', '))}` : ''} · Private until ${esc(friend.name.split(' ')[0])} vouches</small>
+              </div>
+              <button type="button" class="btn btn-primary btn-sm" data-quick-ask-uid="${esc(friend.uid)}" data-quick-ask-name="${esc(friend.name)}" data-quick-ask-co="${esc(co.company)}">Ask intro</button>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    ` : '';
 
     if (showingCompanies) {
       sidebarBody.innerHTML = `
-        <p class="kicker">${companies.length} organizations</p>
-        <div class="dir-list">
-          ${companies.slice(0, 80).map((co) => `
-            <button type="button" class="dir-item ${expandedCompanyKey === co.key ? 'active' : ''}" data-pick-company="${esc(co.key)}">
-              <div class="dir-item-main">
-                <strong>${esc(co.name)}</strong>
-                <small>${co.people.slice(0, 2).map((p) => esc(p.name)).join(', ')}</small>
-              </div>
-              <span class="dir-count">${co.people.length}</span>
-            </button>
-          `).join('') || `<p style="font-size:0.86rem; color:var(--ref-muted);">No organizations match this filter.</p>`}
+        ${circleSectionHtml}
+        <div>
+          <p class="kicker" style="margin-bottom:8px;">Your organizations (${companies.length})</p>
+          <div class="dir-list">
+            ${companies.slice(0, 80).map((co) => `
+              <button type="button" class="dir-item ${expandedCompanyKey === co.key ? 'active' : ''}" data-pick-company="${esc(co.key)}">
+                <div class="dir-item-main">
+                  <strong>${esc(co.name)}</strong>
+                  <small>${co.people.slice(0, 2).map((p) => esc(p.name)).join(', ')}</small>
+                </div>
+                <span class="dir-count">${co.people.length}</span>
+              </button>
+            `).join('') || `<p style="font-size:0.86rem; color:#666560;">No direct organizations match this filter.</p>`}
+          </div>
         </div>
       `;
       wireCompanyPickers();
+      wireQuickAskButtons();
     } else {
       sidebarBody.innerHTML = `
-        <p class="kicker">${people.length} matching people</p>
-        <div class="dir-list">
-          ${people.slice(0, 100).map((p) => `
-            <button type="button" class="dir-item ${selectedNode?.id === 'person:' + p.id ? 'active' : ''}" data-pick-person="${esc(p.id)}">
-              <div class="avatar-circle" style="background:${p.canIntroduce ? 'var(--ref-terracotta)' : 'var(--ref-olive)'};">
-                ${p.photoUrl ? `<img src="${esc(p.photoUrl)}" alt="" />` : esc(initials(p.name))}
-              </div>
-              <div class="dir-item-main">
-                <strong>${esc(p.name)}</strong>
-                <small>${esc([p.role, p.company].filter(Boolean).join(' · ') || p.email || p.sources.join(' · '))}</small>
-              </div>
-              ${p.strength === 'strong' ? `<span class="badge google">Strong</span>` : p.canIntroduce ? `<span class="badge intro">Intro</span>` : ''}
-            </button>
-          `).join('') || `<p style="font-size:0.86rem; color:var(--ref-muted);">No contacts match “${esc(searchQuery)}”.</p>`}
+        ${circleSectionHtml}
+        <div>
+          <p class="kicker" style="margin-bottom:8px;">Your direct contacts (${people.length})</p>
+          <div class="dir-list">
+            ${people.slice(0, 100).map((p) => `
+              <button type="button" class="dir-item ${selectedNode?.id === 'person:' + p.id ? 'active' : ''}" data-pick-person="${esc(p.id)}">
+                <div class="avatar-circle" style="background:${p.canIntroduce ? '#a03824' : '#2c2f27'};">
+                  ${p.photoUrl ? `<img src="${esc(p.photoUrl)}" alt="" />` : esc(initials(p.name))}
+                </div>
+                <div class="dir-item-main">
+                  <strong>${esc(p.name)}</strong>
+                  <small>${esc([p.role, p.company].filter(Boolean).join(' · ') || p.email || p.sources.join(' · '))}</small>
+                </div>
+                ${p.strength === 'strong' ? `<span class="badge google">Strong</span>` : p.canIntroduce ? `<span class="badge intro">Intro</span>` : ''}
+              </button>
+            `).join('') || (!circleHits.length ? `<p style="font-size:0.86rem; color:#666560;">No connections match “${esc(searchQuery)}”.</p>` : '')}
+          </div>
         </div>
       `;
       wirePersonPickers();
+      wireQuickAskButtons();
     }
+  }
+
+  // Dedicated Requests tab: receive incoming requests (Uma -> Nithin -> Myntra) + pick which contact to intro + track sent requests
+  function renderRequests() {
+    const reqs = getIntroRequests();
+    const incoming = reqs.incoming || [];
+    const outgoing = reqs.outgoing || [];
+    const myContacts = getContacts();
+
+    const matchingContactsFor = (companyName) => {
+      const targetKey = normalizeCompanyKey(companyName);
+      const lower = String(companyName || '').toLowerCase();
+      return myContacts.filter((c) =>
+        (targetKey && c.companyKey === targetKey)
+        || (lower && (c.company || '').toLowerCase().includes(lower)),
+      );
+    };
+
+    sidebarBody.innerHTML = `
+      <div>
+        <p class="kicker" style="margin-bottom:8px;">Incoming referral requests (${incoming.length})</p>
+        ${incoming.length ? `
+          <div style="display:flex; flex-direction:column; gap:10px;">
+            ${incoming.map((req) => {
+              const matches = matchingContactsFor(req.targetCompany);
+              return `
+                <div class="request-card">
+                  <div style="display:flex; align-items:center; justify-content:space-between; gap:8px;">
+                    <strong style="font-size:0.9rem;">${esc(req.requesterName)} → ${esc(req.targetCompany)}</strong>
+                    <span class="badge ${req.status === 'vouched' ? 'google' : req.status === 'declined' ? '' : 'intro'}">${esc(req.status)}</span>
+                  </div>
+                  ${req.note ? `<p style="font-size:0.84rem; color:#52514d; line-height:1.45;">“${esc(req.note)}”</p>` : ''}
+                  ${matches.length ? `
+                    <label class="field" style="font-size:0.78rem; color:#666560;">
+                      Your private ${esc(req.targetCompany)} contact to introduce:
+                      <select data-req-pick="${esc(req.id)}" style="margin-top:4px; padding:7px 9px; border-radius:8px; border:1px solid #dcdcd6; background:#fff; font-size:0.84rem; color:#141413;">
+                        ${matches.map((c) => `<option value="${esc(c.id)}">${esc(c.name)}${c.role ? ` (${esc(c.role)})` : ''}</option>`).join('')}
+                        <option value="">Choose contact manually on WhatsApp</option>
+                      </select>
+                    </label>
+                  ` : ''}
+                  <div class="request-card-actions">
+                    ${req.status === 'pending' ? `
+                      <button type="button" class="btn btn-primary btn-sm" data-ws-vouch="${esc(req.id)}">Vouch &amp; send on WhatsApp</button>
+                      <button type="button" class="btn btn-outline btn-sm" data-ws-decline="${esc(req.id)}">Decline</button>
+                    ` : req.status === 'vouched' ? `
+                      <button type="button" class="btn btn-outline btn-sm" data-ws-handoff="${esc(req.id)}">Open WhatsApp / Email handoff</button>
+                    ` : ''}
+                  </div>
+                </div>
+              `;
+            }).join('')}
+          </div>
+        ` : `<div class="inspector-card"><p style="font-size:0.85rem; color:#666560;">No incoming requests yet. When a friend in your circle searches a company you know (like Myntra) and asks for an intro, it appears right here in real time.</p></div>`}
+      </div>
+
+      <div>
+        <p class="kicker" style="margin-bottom:8px;">Requests you sent (${outgoing.length})</p>
+        ${outgoing.length ? `
+          <div style="display:flex; flex-direction:column; gap:8px;">
+            ${outgoing.map((req) => `
+              <div class="request-card">
+                <div style="display:flex; align-items:center; justify-content:space-between; gap:8px;">
+                  <strong style="font-size:0.88rem;">${esc(req.targetCompany)} via ${esc(req.connectorName)}</strong>
+                  <span class="badge ${req.status === 'vouched' ? 'google' : req.status === 'declined' ? '' : 'intro'}">${req.status === 'pending' ? `Waiting for ${esc(req.connectorName.split(' ')[0])}` : esc(req.status)}</span>
+                </div>
+                ${req.note ? `<p style="font-size:0.82rem; color:#666560;">“${esc(req.note)}”</p>` : ''}
+              </div>
+            `).join('')}
+          </div>
+        ` : `<p style="font-size:0.84rem; color:#666560;">Search any company in your Circle to ask a friend for a warm intro.</p>`}
+      </div>
+    `;
+
+    sidebarBody.querySelectorAll('[data-ws-vouch]').forEach((btn) => {
+      btn.addEventListener('click', async () => {
+        const req = incoming.find((r) => r.id === btn.dataset.wsVouch);
+        const pickedId = sidebarBody.querySelector(`[data-req-pick="${CSS.escape(btn.dataset.wsVouch)}"]`)?.value || '';
+        const pickedContact = myContacts.find((c) => c.id === pickedId) || null;
+        btn.disabled = true;
+        await onRespondIntro(btn.dataset.wsVouch, 'vouched');
+        if (req) onOpenRequestHandoff(req, pickedContact);
+      });
+    });
+
+    sidebarBody.querySelectorAll('[data-ws-handoff]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const req = incoming.find((r) => r.id === btn.dataset.wsHandoff);
+        const pickedId = sidebarBody.querySelector(`[data-req-pick="${CSS.escape(btn.dataset.wsHandoff)}"]`)?.value || '';
+        const pickedContact = myContacts.find((c) => c.id === pickedId) || null;
+        if (req) onOpenRequestHandoff(req, pickedContact);
+      });
+    });
+
+    sidebarBody.querySelectorAll('[data-ws-decline]').forEach((btn) => {
+      btn.addEventListener('click', async () => {
+        btn.disabled = true;
+        await onRespondIntro(btn.dataset.wsDecline, 'declined');
+      });
+    });
+  }
+
+  function wireQuickAskButtons() {
+    sidebarBody.querySelectorAll('[data-quick-ask-uid]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        if (previewSample && !getContacts().length) {
+          onOpenCircle();
+          return;
+        }
+        onRequestIntro({
+          connectorUid: btn.dataset.quickAskUid,
+          connectorName: btn.dataset.quickAskName,
+          targetCompany: btn.dataset.quickAskCo,
+        });
+      });
+    });
   }
 
   function wireCompanyPickers() {
@@ -527,7 +692,8 @@ export function mountWorkspace(container, {
   }
 
   function renderSidebar() {
-    if (sidebarTab === 'directory') renderDirectory();
+    if (sidebarTab === 'requests') renderRequests();
+    else if (sidebarTab === 'directory') renderDirectory();
     else renderInspector();
   }
 
@@ -561,8 +727,10 @@ export function mountWorkspace(container, {
     container.querySelector('#stat-circle').textContent = String(latestModel.stats.circleCount);
 
     const pendingIn = (getIntroRequests().incoming || []).filter((r) => r.status === 'pending').length;
-    const badgeEl = container.querySelector('#circle-req-badge');
-    badgeEl.innerHTML = pendingIn ? `<span class="badge intro" style="margin-left:4px;">${pendingIn}</span>` : '';
+    const tabBadge = container.querySelector('#tab-req-badge');
+    if (tabBadge) {
+      tabBadge.innerHTML = pendingIn ? `<span class="badge intro" style="margin-left:3px; padding:1px 6px;">${pendingIn}</span>` : '';
+    }
 
     if (selectedNode) {
       const updated = latestModel.nodes.find((n) => n.id === selectedNode.id);

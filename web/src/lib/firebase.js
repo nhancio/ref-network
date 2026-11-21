@@ -316,6 +316,7 @@ export async function publishPublicProfile(uid, profile, handle, companyReach = 
     company: c.company,
     count: c.count,
     introCount: c.introCount,
+    roles: Array.isArray(c.roles) ? c.roles.slice(0, 3) : [],
   }));
 
   // If handle changed, remove old handle doc
@@ -363,6 +364,7 @@ export async function createCircleInvite(user, profile, inviterSharedCompanies =
       company: c.company,
       count: c.count,
       introCount: c.introCount,
+      roles: Array.isArray(c.roles) ? c.roles.slice(0, 3) : [],
     })),
     usedBy: null,
     createdAt: serverTimestamp(),
@@ -451,6 +453,7 @@ export async function publishSharedCompaniesToCircle(uid, connections, sharedCom
     company: c.company,
     count: c.count,
     introCount: c.introCount,
+    roles: Array.isArray(c.roles) ? c.roles.slice(0, 3) : [],
   }));
   const batch = writeBatch(db);
   for (const conn of connections) {

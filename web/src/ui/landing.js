@@ -9,67 +9,62 @@ const GOOGLE_G_SVG = `<svg width="18" height="18" viewBox="0 0 24 24" aria-hidde
   <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
 </svg>`;
 
-const DEMO_QUERIES = [
+const DEMO_SCENARIOS = [
   {
-    prompt: 'Who do I know at Swiggy or Razorpay?',
-    followUp: 'Who can intro me to Araku Coffee?',
-    sources: ['LinkedIn', 'Google Contacts', 'Your circle'],
+    prompt: 'Who do I know at Swiggy?',
+    followUp: 'See how Nithin handles Uma’s Myntra intro request →',
+    sources: ['Your contacts', 'Your circle (Uma, Asha)'],
     results: [
       {
-        initials: 'RD',
+        initials: 'UM',
         tone: 'warm',
-        name: 'Rohan Deshmukh',
-        via: 'Connected on LinkedIn · Strong tie',
-        bio: 'VP Product at Swiggy. Marked ready to introduce.',
+        name: 'Swiggy · 3 contacts via Uma',
+        via: 'Nithin → Uma → Swiggy (VP Product, Design Lead)',
+        bio: 'Uma’s contacts stay private. Ask Uma to vouch and introduce you.',
+        action: 'Ask Uma for an intro',
       },
       {
-        initials: 'MK',
+        initials: 'MY',
         tone: 'sage',
-        name: 'Meera Krishnan',
-        via: 'In your LinkedIn & Google Contacts',
-        bio: 'Head of Partnerships at Razorpay. Direct warm intro.',
+        name: 'Myntra · 2 direct contacts',
+        via: 'In your Google Contacts (Priya Nair, Karthik Reddy)',
+        bio: 'Direct connections in your own vault — ready to introduce friends.',
       },
       {
         initials: 'AM',
         tone: 'stone',
-        name: 'Araku Coffee (4 contacts)',
-        via: 'Knows your friend Asha Murthy well',
-        bio: '2nd-degree warm path via your Ref Circle.',
+        name: 'Araku Coffee · 2 contacts via Asha',
+        via: 'Nithin → Asha → Araku Coffee (Head of Retail)',
+        bio: '2nd-degree warm path through your Ref Circle.',
       },
     ],
   },
   {
-    prompt: 'Who can intro me to Araku Coffee or Bengaluru founders?',
-    followUp: 'Who do I know at Swiggy or Razorpay?',
-    sources: ['Google Contacts', 'Your circle'],
+    prompt: 'Incoming request: Uma wants an intro at Myntra',
+    followUp: '← Back: Nithin searches “Swiggy” via Uma',
+    sources: ['Requests tab (live)', 'Your private Myntra contacts'],
     results: [
       {
-        initials: 'AM',
+        initials: 'UM',
         tone: 'warm',
-        name: 'Asha Murthy',
-        via: 'In your Ref Circle · 2nd-degree bridge',
-        bio: 'Owner at Field Supply. Can introduce you at Araku Coffee & Naru Noodle Bar.',
+        name: 'Uma requested an intro at Myntra',
+        via: '“Looking to connect with someone on Myntra’s growth team.”',
+        bio: 'Only you see which Myntra contacts are in your vault.',
       },
       {
-        initials: 'AR',
+        initials: 'PN',
         tone: 'sage',
-        name: 'Ananya Rao',
-        via: 'LinkedIn + Google Contacts',
-        bio: 'Founder & Host at Mango Yard, Indiranagar.',
-      },
-      {
-        initials: 'VS',
-        tone: 'stone',
-        name: 'Vikramaditya Shetty',
-        via: 'Connected on LinkedIn · Direct',
-        bio: 'Principal at Peak XV Partners. Ready to introduce.',
+        name: 'Pick your contact: Priya Nair (Growth Lead)',
+        via: 'Matched privately from your Google Contacts',
+        bio: 'Click Vouch & send — Ref prefills a WhatsApp or email intro to Priya.',
+        action: 'Vouch & send on WhatsApp',
       },
     ],
   },
 ];
 
 export function mountLanding(container, { onOpenAuth, onGoogleSignIn, pendingInvite }) {
-  let queryIndex = 0;
+  let scenarioIndex = 0;
 
   container.innerHTML = `
     <div class="hp-root" id="top">
@@ -101,17 +96,17 @@ export function mountLanding(container, { onOpenAuth, onGoogleSignIn, pendingInv
           </div>
         ` : ''}
 
-        <!-- Hero: Happenstance-clean light split with floating interactive search card -->
+        <!-- Hero: Happenstance-clean light split with Nithin <-> Uma warm-intro use cases -->
         <section class="hp-hero">
           <div class="hp-wrap hp-hero-grid">
             <div class="hp-hero-copy">
               <a class="hp-news-pill" href="#graph-preview">
-                <span>Interactive 3D relationship graph</span>
+                <span>Privacy-first 3D referral graph</span>
                 <span aria-hidden="true">›</span>
               </a>
               <h1>Your next opportunity<br />is one intro away.</h1>
               <p class="hp-hero-sub">
-                Find who you’re looking for among everyone you, your friends, and your circle know — mapped in 3D.
+                Search any company across your contacts and trusted friends. See who can introduce you in 3D — without ever exposing private phone numbers or contact lists.
               </p>
               <div class="hp-cta-row">
                 <button type="button" class="hp-btn hp-btn-primary hp-btn-pill" id="hero-start">Search for free</button>
@@ -121,7 +116,7 @@ export function mountLanding(container, { onOpenAuth, onGoogleSignIn, pendingInv
                 </button>
               </div>
               <p class="hp-hero-footnote">
-                Works with <strong>LinkedIn exports</strong>, <strong>Google Contacts</strong>, and <strong>Apple .vcf</strong>
+                Syncs with <strong>Google Contacts</strong> · Works with private <strong>Friend Circles</strong>
               </p>
             </div>
 
@@ -137,33 +132,33 @@ export function mountLanding(container, { onOpenAuth, onGoogleSignIn, pendingInv
           <div class="hp-wrap">
             <div class="hp-center-head">
               <h2>Your network is bigger than you think</h2>
-              <p>Add your connections, invite friends, and turn every signal of who knows who into one interactive 3D map.</p>
+              <p>Connect your contacts and invite trusted friends. Search who knows someone at Swiggy, or vouch when a friend asks for an intro at Myntra.</p>
             </div>
 
             <div class="hp-network-grid" id="graph-preview">
               <ol class="hp-steps" role="tablist" aria-label="How Ref Network works">
                 <li class="hp-step active" data-step="0">
                   <button type="button">
-                    <strong>1. Add your connections</strong>
-                    <span>Drop your LinkedIn .zip or Connections.csv, sync Google Contacts, or upload a .vcf file.</span>
+                    <strong>1. Sync your contacts privately</strong>
+                    <span>Connect Google Contacts in one click. Companies are inferred automatically from work emails and locked in your private vault.</span>
                   </button>
                 </li>
                 <li class="hp-step" data-step="1">
                   <button type="button">
-                    <strong>2. Ref maps your network in 3D</strong>
-                    <span>Companies are inferred from work emails, duplicates merge automatically, and message metadata ranks strong ties.</span>
+                    <strong>2. Invite trusted friends like Uma</strong>
+                    <span>Share a private one-time link. Your circle sees only anonymized company &amp; role counts — never names, emails, or phone numbers.</span>
                   </button>
                 </li>
                 <li class="hp-step" data-step="2">
                   <button type="button">
-                    <strong>3. Add friends to your circle</strong>
-                    <span>Share a private invite link so your friends’ company reach appears as second-degree bridges.</span>
+                    <strong>3. Search Swiggy &amp; ask Uma for an intro</strong>
+                    <span>See the 3D path (Nithin → Uma → Swiggy · VP Product) and send Uma a private referral request instead of reaching out cold.</span>
                   </button>
                 </li>
                 <li class="hp-step" data-step="3">
                   <button type="button">
-                    <strong>4. Ask for a warm intro</strong>
-                    <span>Request an introduction in one tap and forward a prefilled warm message on WhatsApp or email.</span>
+                    <strong>4. Receive &amp; vouch Myntra requests live</strong>
+                    <span>When Uma asks you for a Myntra intro, it arrives in your Requests tab with your private Myntra contacts ready to forward on WhatsApp.</span>
                   </button>
                 </li>
               </ol>
@@ -171,21 +166,20 @@ export function mountLanding(container, { onOpenAuth, onGoogleSignIn, pendingInv
               <div class="hp-3d-shell">
                 <div class="hp-3d-topbar">
                   <div class="hp-source-chips">
-                    <span class="hp-src-chip"><strong>LinkedIn</strong> 12</span>
-                    <span class="hp-src-chip"><strong>Contacts</strong> 9</span>
-                    <span class="hp-src-chip is-accent"><strong>Ref Circle</strong> 2</span>
+                    <span class="hp-src-chip"><strong>Contacts</strong> 10</span>
+                    <span class="hp-src-chip is-accent"><strong>Circle</strong> Uma, Asha</span>
                   </div>
-                  <div class="hp-3d-fly-tabs" role="group" aria-label="Focus 3D node">
-                    <button type="button" class="hp-fly-btn active" data-fly="company:swiggy">Swiggy</button>
-                    <button type="button" class="hp-fly-btn" data-fly="company:razorpay">Razorpay</button>
-                    <button type="button" class="hp-fly-btn" data-fly="second:circle-asha:araku coffee">Araku Coffee</button>
+                  <div class="hp-3d-fly-tabs" role="group" aria-label="Focus 3D path">
+                    <button type="button" class="hp-fly-btn active" data-fly="second:circle-uma:swiggy">Swiggy (via Uma)</button>
+                    <button type="button" class="hp-fly-btn" data-fly="company:myntra">Myntra</button>
+                    <button type="button" class="hp-fly-btn" data-fly="second:circle-asha:araku coffee">Araku</button>
                   </div>
                 </div>
                 <div class="hp-3d-canvas" id="landing-graph-host" aria-label="Interactive 3D network graph"></div>
                 <div class="hp-3d-footer">
                   <div>
-                    <div class="hp-3d-route" id="landing-route">Nithin → Swiggy</div>
-                    <div class="hp-3d-detail" id="landing-detail">3 direct contacts · Rohan Deshmukh, Kavya Nair, Siddharth Menon</div>
+                    <div class="hp-3d-route" id="landing-route">Nithin → Uma → Swiggy</div>
+                    <div class="hp-3d-detail" id="landing-detail">2nd-degree warm path · 3 contacts (VP Product, Design Lead) · Private until Uma vouches</div>
                   </div>
                   <span class="hp-3d-hint">Drag to orbit · Scroll to zoom</span>
                 </div>
@@ -197,22 +191,22 @@ export function mountLanding(container, { onOpenAuth, onGoogleSignIn, pendingInv
         <!-- Section 3: Private and secure -->
         <section class="hp-privacy-section" id="privacy">
           <div class="hp-wrap hp-privacy-inner">
-            <h2>Private and secure</h2>
+            <h2>Private by design — nobody sees your contacts</h2>
             <p>
-              You control what you share. Every contact you import stays locked inside your private Firestore vault (<code>users/{uid}/contacts</code>). Your Ref Circle and optional <code>/u/handle</code> page show only organization names and counts — never personal emails, phone numbers, or message content.
+              Nithin cannot read Uma’s contacts, and Uma cannot read Nithin’s. Every imported contact stays locked in your private Firestore vault (<code>users/{uid}/contacts</code>). Your friends only see anonymized company &amp; role counts so they can ask you to make a warm introduction.
             </p>
             <div class="hp-trust-row">
               <div class="hp-trust-item">
-                <strong>Private per-user vault</strong>
-                <span>Firestore security rules block every other user from reading your contacts.</span>
+                <strong>Double-blind discovery</strong>
+                <span>Friends see “3 contacts at Swiggy (VP Product)” via Uma — never third-party names, emails, or phone numbers.</span>
               </div>
               <div class="hp-trust-item">
-                <strong>Google verified branding</strong>
-                <span>Read-only Google Contacts access adhering to Google API Limited Use rules.</span>
+                <strong>You approve every intro</strong>
+                <span>When Uma requests a Myntra intro, only you see your Myntra contacts and choose who to connect on WhatsApp.</span>
               </div>
               <div class="hp-trust-item">
-                <strong>Export or delete anytime</strong>
-                <span>Download a JSON backup or wipe your account and vault in one click.</span>
+                <strong>Google verified &amp; deletable</strong>
+                <span>Read-only Google Contacts under Limited Use rules. Export a JSON backup or wipe your account anytime.</span>
               </div>
             </div>
             <a class="hp-text-link" href="/privacy">Read our privacy policy →</a>
@@ -225,28 +219,24 @@ export function mountLanding(container, { onOpenAuth, onGoogleSignIn, pendingInv
             <h2>Frequently asked questions</h2>
             <div class="hp-faq-list">
               <details open>
-                <summary>What is Ref Network?</summary>
-                <p>Ref Network combines your LinkedIn connections, Google or phone contacts, and trusted friend circles into one searchable 3D map so you can instantly see who you know at any company and ask for warm introductions.</p>
+                <summary>Can my friends see the names or phone numbers of my contacts?</summary>
+                <p>No. Your raw Google Contacts are strictly private to your account (<code>users/{uid}/contacts</code>). Friends in your Ref Circle only see anonymized organization and role summaries (for example, “3 contacts at Swiggy · VP Product”) so they know to ask you for a warm introduction.</p>
               </details>
               <details>
-                <summary>How do I import my LinkedIn connections?</summary>
-                <p>Request your data archive from LinkedIn Data Export (Connections, and optionally Messages) and drop the downloaded <code>.zip</code> or <code>Connections.csv</code> directly into Ref. We parse it locally in your browser before saving to your private vault.</p>
+                <summary>How do I ask a friend for a referral?</summary>
+                <p>Search any company (like “Swiggy”) in your workspace. The 3D graph highlights the path through your friend (You → Uma → Swiggy). Click “Ask Uma for an intro” and include a short note explaining why you want to connect.</p>
               </details>
               <details>
-                <summary>Will anyone know I uploaded my contacts, or does Ref message them?</summary>
-                <p>No. Importing your contacts is completely private and Ref never emails, texts, or messages anyone automatically. Every warm introduction is drafted for you to review and send yourself on WhatsApp or email.</p>
+                <summary>How do I receive and handle incoming intro requests?</summary>
+                <p>Incoming requests appear live in the <strong>Requests</strong> tab inside your workspace with an unread badge. Ref privately shows your matching contacts for that company (only visible to you) so you can pick the right person and forward a prefilled intro on WhatsApp or email in one click.</p>
               </details>
               <details>
-                <summary>How do second-degree paths and Ref Circles work?</summary>
-                <p>Generate a one-time private invite link and send it to a friend you trust. Once they accept, their high-level company reach appears as warm second-degree branches in your 3D graph without exposing individual contact details.</p>
+                <summary>Does Ref message or email my contacts automatically?</summary>
+                <p>Never. Ref prepares a draft intro message for you to review and send yourself through WhatsApp or email. You can also decline any request quietly.</p>
               </details>
               <details>
-                <summary>What shows up if I turn on my public /u/handle page?</summary>
-                <p>Only your display name, optional headline/LinkedIn link, and the list of companies (with counts) you can introduce people to — zero contact names, emails, or phone numbers. You can turn it off anytime.</p>
-              </details>
-              <details>
-                <summary>Is Ref Network free and can I delete my data?</summary>
-                <p>Yes. You can export a full JSON backup, clear individual import sources, or permanently delete your account and every stored contact directly inside the app.</p>
+                <summary>Can I delete my contacts or account later?</summary>
+                <p>Yes. Open Connect Contacts → Vault controls to clear a single source, export a JSON backup, or permanently delete all your data and account.</p>
               </details>
             </div>
           </div>
@@ -256,7 +246,7 @@ export function mountLanding(container, { onOpenAuth, onGoogleSignIn, pendingInv
         <section class="hp-final-section">
           <div class="hp-wrap hp-final-inner">
             <h2>Make your own warm intros</h2>
-            <p>Connect your LinkedIn and contacts in under a minute and explore your entire network in 3D.</p>
+            <p>Connect your Google Contacts, invite your inner circle, and explore your 3D warm-intro graph.</p>
             <div class="hp-cta-row" style="justify-content:center;">
               <button type="button" class="hp-btn hp-btn-primary hp-btn-pill" id="final-start">Search for free</button>
               <button type="button" class="hp-btn hp-btn-google hp-btn-pill" id="final-google">
@@ -272,7 +262,7 @@ export function mountLanding(container, { onOpenAuth, onGoogleSignIn, pendingInv
         <div class="hp-wrap hp-footer-inner">
           <div class="hp-footer-brand">
             <a class="hp-brand" href="#top"><img src="/ref-logo-primary.svg" alt="Ref Network" /></a>
-            <p>Map your network in 3D. Reach anyone through trust.</p>
+            <p>Private 3D relationship graph and warm introductions.</p>
           </div>
           <div class="hp-footer-cols">
             <div>
@@ -297,16 +287,16 @@ export function mountLanding(container, { onOpenAuth, onGoogleSignIn, pendingInv
     </div>
   `;
 
-  // Render interactive Happenstance-style Hero Search Card
+  // Render interactive Hero Search Card (toggles between Use Case 1 & Use Case 2)
   const searchCardEl = container.querySelector('#hero-search-card');
   function renderHeroSearchCard() {
-    const q = DEMO_QUERIES[queryIndex];
+    const q = DEMO_SCENARIOS[scenarioIndex];
     searchCardEl.innerHTML = `
       <div class="hp-sc-query-row">
         <div class="hp-sc-bubble">${q.prompt}</div>
       </div>
       <div class="hp-sc-sources">
-        <span class="hp-sc-searched">Searched</span>
+        <span class="hp-sc-searched">Scope</span>
         ${q.sources.map((s) => `<span class="hp-sc-pill">${s}</span>`).join('')}
       </div>
       <div class="hp-sc-results">
@@ -317,6 +307,7 @@ export function mountLanding(container, { onOpenAuth, onGoogleSignIn, pendingInv
               <div class="hp-sc-name">${r.name}</div>
               <div class="hp-sc-via">${r.via}</div>
               <div class="hp-sc-bio">${r.bio}</div>
+              ${r.action ? `<span class="hp-sc-action-chip">${r.action}</span>` : ''}
             </div>
           </div>
         `).join('')}
@@ -327,14 +318,14 @@ export function mountLanding(container, { onOpenAuth, onGoogleSignIn, pendingInv
       </button>
     `;
     searchCardEl.querySelector('#hero-cycle-query').addEventListener('click', () => {
-      queryIndex = (queryIndex + 1) % DEMO_QUERIES.length;
+      scenarioIndex = (scenarioIndex + 1) % DEMO_SCENARIOS.length;
       renderHeroSearchCard();
     });
   }
   renderHeroSearchCard();
 
-  // Mount our signature interactive Three.js 3D graph in Section 2
-  let expandedCompanyKey = 'swiggy';
+  // Mount our signature interactive Three.js 3D graph
+  let expandedCompanyKey = 'myntra';
   const routeEl = container.querySelector('#landing-route');
   const detailEl = container.querySelector('#landing-detail');
   const flyBtns = container.querySelectorAll('.hp-fly-btn');
@@ -343,18 +334,19 @@ export function mountLanding(container, { onOpenAuth, onGoogleSignIn, pendingInv
   function updateReadout(node) {
     if (!node || node.kind === 'you') {
       routeEl.textContent = 'Nithin · Center of graph';
-      detailEl.textContent = `${SAMPLE_CONTACTS.length} direct contacts across ${new Set(SAMPLE_CONTACTS.map((c) => c.companyKey)).size} organizations`;
+      detailEl.textContent = `${SAMPLE_CONTACTS.length} private contacts + Uma & Asha in Ref Circle`;
       return;
     }
     if (node.kind === 'company') {
       routeEl.textContent = `Nithin → ${node.label}`;
       detailEl.textContent = `${node.count} direct ${node.count === 1 ? 'contact' : 'contacts'} · ${node.data.people.map((p) => p.name).slice(0, 3).join(', ')}`;
     } else if (node.kind === 'second-company') {
+      const roles = node.data.roles?.length ? ` (${node.data.roles.join(', ')})` : '';
       routeEl.textContent = `Nithin → ${node.viaFriend.name} → ${node.label}`;
-      detailEl.textContent = `2nd-degree warm path via ${node.viaFriend.name.split(' ')[0]} · ${node.data.count} contacts`;
+      detailEl.textContent = `2nd-degree warm path · ${node.data.count} contacts${roles} · Private until ${node.viaFriend.name.split(' ')[0]} vouches`;
     } else if (node.kind === 'circle') {
-      routeEl.textContent = `Nithin — ${node.label}`;
-      detailEl.textContent = `Ref Circle bridge · ${node.data.sharedCompanies.map((c) => c.company).join(', ')}`;
+      routeEl.textContent = `Nithin ↔ ${node.label} (Ref Circle)`;
+      detailEl.textContent = `Can introduce you at ${node.data.sharedCompanies.map((c) => c.company).join(', ')}`;
     } else if (node.kind === 'person') {
       routeEl.textContent = `Nithin → ${node.label}`;
       detailEl.textContent = [node.data.role, node.data.company].filter(Boolean).join(' · ');
@@ -406,16 +398,15 @@ export function mountLanding(container, { onOpenAuth, onGoogleSignIn, pendingInv
     btn.addEventListener('click', () => flyToTarget(btn.dataset.fly));
   });
 
-  const stepTargets = ['you', 'company:swiggy', 'circle:circle-asha', 'second:circle-asha:araku coffee'];
+  const stepTargets = ['you', 'circle:circle-uma', 'second:circle-uma:swiggy', 'company:myntra'];
   stepItems.forEach((item) => {
     item.querySelector('button').addEventListener('click', () => {
       stepItems.forEach((s) => s.classList.toggle('active', s === item));
       const idx = Number(item.dataset.step || 0);
-      flyToTarget(stepTargets[idx] || 'company:swiggy');
+      flyToTarget(stepTargets[idx] || 'second:circle-uma:swiggy');
     });
   });
 
-  // Auth actions (direct 1-click Google Sign-In or Auth Modal)
   container.querySelector('#nav-signin').addEventListener('click', () => onOpenAuth('signin'));
   container.querySelector('#nav-start').addEventListener('click', () => onOpenAuth('signup'));
   container.querySelector('#hero-start').addEventListener('click', () => onOpenAuth('signup'));

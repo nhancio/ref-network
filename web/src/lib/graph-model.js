@@ -65,7 +65,7 @@ export function buildGraphModel({
     (a, b) => b.people.length - a.people.length || b.introCount - a.introCount || a.name.localeCompare(b.name),
   );
 
-  // Filter Ref Circle friends & their shared 2nd-degree companies
+  // Filter Ref Circle friends & their shared anonymized 2nd-degree companies (never third-party PII)
   const includeCircle = sourceFilter === 'all' || sourceFilter === 'circle' || sourceFilter === 'intro';
   const activeCircle = includeCircle
     ? circleConnections
@@ -74,7 +74,8 @@ export function buildGraphModel({
           const sharedCompanies = (conn.sharedCompanies || []).filter((co) => {
             if (sourceFilter === 'intro' && !co.introCount) return false;
             if (!tokens.length) return true;
-            return matchesSearch(`${conn.name} ${co.company}`, tokens);
+            const roleText = Array.isArray(co.roles) ? co.roles.join(' ') : '';
+            return matchesSearch(`${conn.name} ${co.company} ${roleText}`, tokens);
           });
           const personMatches = !tokens.length || matchesSearch(`${conn.name} ${conn.headline || ''}`, tokens);
           if (!personMatches && !sharedCompanies.length) return null;
@@ -141,11 +142,12 @@ export function buildGraphModel({
       const cAngle = angle + spread;
       const cDist = dist + 145;
       const nodeId = `second:${friend.uid}:${co.companyKey}`;
+      const roleHint = Array.isArray(co.roles) && co.roles.length ? ` · ${co.roles[0]}` : '';
       nodes.push({
         id: nodeId,
         kind: 'second-company',
         label: co.company,
-        sublabel: `Via ${friend.name.split(' ')[0]} · ${co.count}`,
+        sublabel: `Via ${friend.name.split(' ')[0]} · ${co.count}${roleHint}`,
         viaFriend: friend,
         data: co,
         x: Math.cos(cAngle) * cDist,

@@ -261,3 +261,27 @@ test('safeHttpUrl strips javascript: and invalid URLs while preserving https lin
   assert.equal(safeHttpUrl('data:text/html,<script>alert(1)</script>'), '');
   assert.equal(safeHttpUrl('not a url'), '');
 });
+
+test('double-blind circle reach shares anonymized roles without PII and supports role search', () => {
+  const umaContacts = [
+    { id: '1', name: 'Secret Person', email: 'secret@swiggy.in', phone: '+91 99999 00000', company: 'Swiggy', companyKey: 'swiggy', role: 'VP Product', sources: ['google'], canIntroduce: true },
+    { id: '2', name: 'Another Person', email: 'a@swiggy.in', phone: '+91 88888 11111', company: 'Swiggy', companyKey: 'swiggy', role: 'leaked@swiggy.in', sources: ['google'], canIntroduce: false },
+  ];
+  const reach = summarizeCompanyReach(umaContacts);
+  assert.equal(reach.length, 1);
+  assert.equal(reach[0].count, 2);
+  assert.deepEqual(reach[0].roles, ['VP Product']);
+  // Zero third-party names, emails, or phones in shared summary
+  const serialized = JSON.stringify(reach);
+  assert.equal(serialized.includes('Secret Person'), false);
+  assert.equal(serialized.includes('secret@swiggy.in'), false);
+  assert.equal(serialized.includes('99999'), false);
+
+  const model = buildGraphModel({
+    user: { name: 'Nithin' },
+    contacts: [],
+    circleConnections: [{ uid: 'uma', name: 'Uma', status: 'connected', sharedCompanies: reach }],
+    searchQuery: 'VP Product',
+  });
+  assert.ok(model.nodes.some((n) => n.id === 'second:uma:swiggy'));
+});

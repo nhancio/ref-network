@@ -319,12 +319,22 @@ export function summarizeCompanyReach(contacts = []) {
       company: c.company,
       count: 0,
       introCount: 0,
+      rolesSet: new Set(),
     };
     entry.count++;
     if (c.canIntroduce) entry.introCount++;
     if (c.company.length > entry.company.length) entry.company = c.company;
+    const cleanRole = String(c.role ?? '').trim().slice(0, 42);
+    // Only share generic role titles (never emails or phone numbers)
+    if (cleanRole && !cleanRole.includes('@') && !/\d{6,}/.test(cleanRole)) {
+      entry.rolesSet.add(cleanRole);
+    }
     map.set(c.companyKey, entry);
   }
   return Array.from(map.values())
+    .map(({ rolesSet, ...rest }) => ({
+      ...rest,
+      roles: Array.from(rolesSet).slice(0, 3),
+    }))
     .sort((a, b) => b.introCount - a.introCount || b.count - a.count || a.company.localeCompare(b.company));
 }
