@@ -1,4 +1,9 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" role="img" aria-label="Ref Network mark"><title>Ref Network mark</title>
-<rect width="100" height="100" rx="22" fill="#A03824"/>
-<g transform="translate(11 11) scale(.78)"><path d="M21 45 36.25 59.25M50.75 58.25 79 31" fill="none" stroke="#FAF5EB" stroke-width="7" stroke-linecap="round"/><circle cx="21" cy="45" r="9.5" fill="#FAF5EB"/><circle cx="79" cy="31" r="11" fill="#FAF5EB"/><circle cx="43" cy="66" r="9" fill="none" stroke="#FAF5EB" stroke-width="7"/></g>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120" role="img" aria-label="Ref Network">
+  <title>Ref Network</title>
+  <rect width="120" height="120" rx="28" fill="#A03824"/>
+  <!-- Balanced geometric R monogram shifted 2px left to optically center with the connection node -->
+  <path fill="#FAF5EB" fill-rule="evenodd" d="M30 27 H60.5 C74.8 27 84 35.8 84 48.2 C84 60.6 74.8 69.4 60.5 69.4 H45.5 V93 H30 V27 Z M45.5 40 V56.4 H59.2 C65.2 56.4 69 53 69 48.2 C69 43.4 65.2 40 59.2 40 H45.5 Z"/>
+  <path fill="#FAF5EB" d="M54.5 67 H70.2 L86.5 93 H70 Z"/>
+  <!-- Signature Ref node with crisp breathing room -->
+  <circle cx="91.5" cy="28.5" r="7.5" fill="#F1AB8A"/>
 </svg>
