@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120" role="img" aria-label="Ref Network">
+  <title>Ref Network</title>
+  <rect width="120" height="120" rx="28" fill="#A03824"/>
+  <!-- Balanced geometric R monogram shifted 2px left to optically center with the connection node -->
+  <path fill="#FAF5EB" fill-rule="evenodd" d="M30 27 H60.5 C74.8 27 84 35.8 84 48.2 C84 60.6 74.8 69.4 60.5 69.4 H45.5 V93 H30 V27 Z M45.5 40 V56.4 H59.2 C65.2 56.4 69 53 69 48.2 C69 43.4 65.2 40 59.2 40 H45.5 Z"/>
+  <path fill="#FAF5EB" d="M54.5 67 H70.2 L86.5 93 H70 Z"/>
+  <!-- Signature Ref node with crisp breathing room -->
+  <circle cx="91.5" cy="28.5" r="7.5" fill="#F1AB8A"/>
+</svg>
